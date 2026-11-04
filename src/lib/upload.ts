@@ -7,14 +7,14 @@ export type LocalFile = { uri: string; name: string; mime: string; size?: number
 export async function takePhoto(): Promise<LocalFile | null> {
   const perm = await ImagePicker.requestCameraPermissionsAsync();
   if (!perm.granted) return null;
-  const r = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.6 });
+  const r = await ImagePicker.launchCameraAsync({ mediaTypes: ["images"], quality: 0.7, preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible });
   if (r.canceled || !r.assets?.length) return null;
   const a = r.assets[0];
   return { uri: a.uri, name: a.fileName ?? `receipt-${Date.now()}.jpg`, mime: a.mimeType ?? "image/jpeg", size: a.fileSize };
 }
 
 export async function pickPhotos(): Promise<LocalFile[]> {
-  const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.6, allowsMultipleSelection: true, selectionLimit: 6 });
+  const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7, allowsMultipleSelection: true, selectionLimit: 6, preferredAssetRepresentationMode: ImagePicker.UIImagePickerPreferredAssetRepresentationMode.Compatible });
   if (r.canceled) return [];
   return (r.assets ?? []).map((a, i) => ({ uri: a.uri, name: a.fileName ?? `receipt-${Date.now()}-${i}.jpg`, mime: a.mimeType ?? "image/jpeg", size: a.fileSize }));
 }

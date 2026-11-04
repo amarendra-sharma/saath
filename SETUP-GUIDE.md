@@ -27,7 +27,6 @@ Everything here is done through GitHub Desktop and websites. No Terminal needed.
 2. The "Deploy Saath web" action runs on every push. Your app will appear at `https://amarendra-sharma.github.io/saath/`.
    - It works best on its own domain. In Pages, set the custom domain to `saath.macronations.com`.
    - Then add a DNS **CNAME** record `saath → amarendra-sharma.github.io`.
-   - **If you switch to the custom domain,** open `app.json` and delete the line `"baseUrl": "/saath"`. That line is only for the `github.io/saath/` address.
 
 ## 3. Build the phone apps (Expo, free tier)
 
@@ -100,6 +99,16 @@ Your Resend account currently sends from `onboarding@resend.dev`. Resend only de
 
 1. In **resend.com → Domains**, add `macronations.com` and add the DNS records it shows.
 2. In Supabase Edge Function secrets, add `SAATH_EMAIL_FROM` with the value `Saath <saath@macronations.com>`.
+
+## 7. Turn on bill scanning
+
+"Scan a bill" (Add a bill screen) reads photos, scans and PDFs, printed or handwritten, in any language. It fills in the amount, date, who was paid and the category. A PDF holding many bills becomes a review list. Payment slips, deposit receipts and settlement summaries are left unticked so nothing is counted twice.
+
+1. Get an API key at **console.anthropic.com → API keys** and add some credit.
+2. In **Supabase → strategyarena → Edge Functions → Secrets → Add new secret**, set the name to `ANTHROPIC_API_KEY` and paste the key.
+3. Optional: add `SAATH_SCAN_MODEL` to choose the model. The default, `claude-sonnet-5-5`, handles handwriting well. `claude-haiku-5-5` is cheaper.
+
+Cost is roughly ₹1–2 for a one-page bill, and more for long scanned PDFs, since each page is read as an image. Each person is limited to 80 scans a day. Usage is logged in the `saath_scans` table.
 
 ---
 

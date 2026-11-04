@@ -9,7 +9,9 @@ import { Expense, Summary, loadSummary, useLoad } from "../../../lib/data";
 import { CURRENCIES, money, parseAmount, todayISO } from "../../../lib/format";
 import { errText, supabase } from "../../../lib/supabase";
 import { C, S, T } from "../../../lib/theme";
-import { LocalFile, uploadFile } from "../../../lib/upload";
+import { LocalFile, pickPdf, pickPhotos, takePhoto, uploadFile } from "../../../lib/upload";
+import { ScanResult, isBill, scanFile, setPendingScan } from "../../../lib/scan";
+import { ActivityIndicator } from "react-native";
 
 const shift = (iso: string, days: number) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 
@@ -32,6 +34,9 @@ export default function ExpenseForm() {
   const [custom, setCustom] = useState(false);
   const [split, setSplit] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const [scanned, setScanned] = useState<{ path: string; mime: string; size: number | null } | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanMsg, setScanMsg] = useState<{ tone: "ok" | "pending" | "owe"; text: string } | null>(null);
 
   useEffect(() => {
     if (!eid) return;
@@ -62,6 +67,45 @@ export default function ExpenseForm() {
   const cats = CATEGORIES_BY_PURPOSE[s.circle.purpose] ?? CATEGORIES_BY_PURPOSE.other;
   const meId = s.me;
 
+  const runScan = async (pick: () => Promise<LocalFile | LocalFile[] | null>) => {
+    const got = await pick();
+    const f = Array.isArray(got) ? got[0] : got;
+    if (!f) return;
+    setScanning(true); setScanMsg(null);
+    try {
+      const r: ScanResult = { ...(await scanFile(id, f, lang)), circleCurrency: cur };
+      setScanned({ path: r.path, mime: r.mime, size: r.size });
+      const bills = r.documents.filter(isBill);
+      if (bills.length > 1) {
+        setPendingScan(r);
+        router.replace({ pathname: "/circle/[id]/scan-review", params: { id } });
+        return;
+      }
+      const d = bills[0];
+      if (!d) {
+        const kind = r.documents[0]?.doc_type ?? "other";
+        setScanMsg({ tone: "pending", text: t("scan_no_bill", { kind: t("doc_" + kind) }) });
+        return;
+      }
+      setTitle(d.title || d.vendor || "");
+      if (d.vendor) setVendor(d.vendor);
+      if (d.date) setDate(d.date);
+      setCategory(cats.includes(d.category) ? d.category : "other");
+      const note = [d.bill_number ? `#${d.bill_number}` : "", d.note ?? ""].filter(Boolean).join(" · ");
+      if (note) setNotes(note);
+      if (d.currency !== cur) {
+        setForeign(true); setOrigCur(d.currency); setOrigAmount(String(d.amount)); setAmount("");
+        setScanMsg({ tone: "pending", text: t("scan_foreign", { amount: money(d.amount, d.currency, lang), cur }) });
+      } else {
+        setAmount(String(d.amount));
+        setScanMsg({ tone: d.confidence === "high" ? "ok" : "pending",
+          text: (d.confidence === "high" ? t("scan_filled") : t("scan_check")) + (d.note ? ` ${d.note}` : "") });
+      }
+    } catch (e: any) {
+      setScanMsg({ tone: "owe", text: t("err_" + (e?.code || "scan_failed")) === "err_" + (e?.code || "scan_failed") ? t("err_scan_failed") : t("err_" + e.code) });
+    } finally { setScanning(false); }
+  };
+
   const save = async () => {
     if (amt <= 0 || !title.trim()) { notify(t("fill_amount_title")); return; }
     if (!splitOk) { notify(t("split_must_100")); return; }
@@ -83,6 +127,10 @@ export default function ExpenseForm() {
         if (error) throw error;
         expenseId = data.id;
       }
+      if (scanned) {
+        const { error } = await supabase.from("saath_receipts").insert({ expense_id: expenseId, circle_id: id, path: scanned.path, mime: scanned.mime, size_bytes: scanned.size });
+        if (error) throw error;
+      }
       for (const f of files) {
         const path = await uploadFile(id, expenseId!, f);
         const { error } = await supabase.from("saath_receipts").insert({ expense_id: expenseId, circle_id: id, path, mime: f.mime, size_bytes: f.size ?? null });
@@ -102,11 +150,32 @@ export default function ExpenseForm() {
   return (
     <Screen title={eid ? t("edit_expense") : t("add_expense")} subtitle={s.circle.name}
       footer={<Button label={eid ? t("save_changes") : t("save_expense")} icon="checkmark" loading={busy} disabled={amt <= 0 || !title.trim() || !splitOk} onPress={save} />}>
-      <AmountField label={t("amount")} value={amount} onChangeText={setAmount} currency={cur} autoFocus={!eid} />
+      {!eid ? (
+        <Card tone="accent">
+          <Text style={[T.h3, { color: C.ink }]}>{t("scan_title")}</Text>
+          <Text style={[T.small, { color: C.ink2 }]}>{t("scan_hint")}</Text>
+          {scanning ? (
+            <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.sm }}>
+              <ActivityIndicator color={C.primary} />
+              <Text style={[T.small, { color: C.ink2, flex: 1 }]}>{t("scan_reading")}</Text>
+            </View>
+          ) : (
+            <View style={{ flexDirection: "row", gap: S.sm }}>
+              <Button small icon="camera-outline" label={t("take_photo")} style={{ flex: 1 }} onPress={() => runScan(takePhoto)} />
+              <Button small icon="images-outline" label={t("from_gallery")} style={{ flex: 1 }} onPress={() => runScan(async () => (await pickPhotos()).slice(0, 1))} />
+              <Button small icon="document-outline" label="PDF" style={{ flex: 0.7 }} onPress={() => runScan(async () => (await pickPdf()).slice(0, 1))} />
+            </View>
+          )}
+          {scanned && !scanning ? <Text style={[T.tiny, { color: C.ok, fontWeight: "700" }]}>✓ {t("scan_attached")}</Text> : null}
+        </Card>
+      ) : null}
+      {scanMsg ? <Banner tone={scanMsg.tone} icon="sparkles-outline" text={scanMsg.text} /> : null}
+
+      <AmountField label={t("amount")} value={amount} onChangeText={setAmount} currency={cur} autoFocus={false} />
       <Field label={t("what_was_it")} value={title} onChangeText={setTitle} placeholder={t("expense_title_ph")} maxLength={120} />
 
       <AttachBar label={t("receipts")} files={files} onChange={setFiles} />
-      {!files.length && !eid ? <Text style={[T.tiny, { color: C.ink3, marginTop: -8 }]}>{t("receipt_hint")}</Text> : null}
+      {!files.length && !eid && !scanned ? <Text style={[T.tiny, { color: C.ink3, marginTop: -8 }]}>{t("receipt_hint")}</Text> : null}
 
       <View style={{ gap: S.sm }}>
         <Text style={[T.small, { color: C.ink2, fontWeight: "600" }]}>{t("category")}</Text>

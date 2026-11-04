@@ -44,8 +44,9 @@ export default function ExpenseView() {
 
   const delReceipt = async (r: Receipt) => {
     if (!(await confirm(t("remove_receipt_q"), "", t("remove"), t("cancel"), true))) return;
-    await supabase.storage.from(RECEIPTS_BUCKET).remove([r.path]);
     const { error } = await supabase.from("saath_receipts").delete().eq("id", r.id);
+    const { count } = await supabase.from("saath_receipts").select("id", { count: "exact", head: true }).eq("path", r.path);
+    if (!error && !count) await supabase.storage.from(RECEIPTS_BUCKET).remove([r.path]);
     if (error) notify(t("something_wrong"), errText(error)); else exp.reload();
   };
 
