@@ -1,0 +1,68 @@
+{
+  "expo": {
+    "name": "Saath",
+    "slug": "saath",
+    "scheme": "saath",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0E6B5C"
+    },
+    "ios": {
+      "bundleIdentifier": "com.macronations.saath",
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Saath uses the camera to photograph bills and receipts.",
+        "NSPhotoLibraryUsageDescription": "Saath lets you attach bills and receipts from your photos.",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.macronations.saath",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0E6B5C"
+      },
+      "permissions": [
+        "CAMERA"
+      ]
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Saath lets you attach bills and receipts from your photos.",
+          "cameraPermission": "Saath uses the camera to photograph bills and receipts."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "backgroundColor": "#0E6B5C"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "supabaseUrl": "https://qgelvmefyexyzpwqupev.supabase.co",
+      "supabaseKey": "sb_publishable_fiT8iohvTZFUZ7vTlYpOvQ_9NPLPcIa",
+      "privacyUrl": "https://amarendra-sharma.github.io/saath/privacy.html"
+    },
+    "description": "Share the cost of caring for someone \u2014 bills, receipts, percentage splits and reminders for families."
+  }
+}
