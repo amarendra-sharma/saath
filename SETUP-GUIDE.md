@@ -27,6 +27,7 @@ Everything here is done through GitHub Desktop and websites. No Terminal needed.
 2. The "Deploy Saath web" action runs on every push. Your app will appear at `https://amarendra-sharma.github.io/saath/`.
    - It works best on its own domain. In Pages, set the custom domain to `saath.macronations.com`.
    - Then add a DNS **CNAME** record `saath → amarendra-sharma.github.io`.
+   - **If you switch to the custom domain,** open `app.json` and delete the line `"baseUrl": "/saath"`. That line is only for the `github.io/saath/` address.
 
 ## 3. Build the phone apps (Expo, free tier)
 

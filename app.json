@@ -56,7 +56,8 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": false
+      "typedRoutes": false,
+      "baseUrl": "/saath"
     },
     "extra": {
       "supabaseUrl": "https://qgelvmefyexyzpwqupev.supabase.co",
