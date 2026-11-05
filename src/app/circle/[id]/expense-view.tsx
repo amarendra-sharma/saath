@@ -10,6 +10,8 @@ import { openUrl } from "../../../lib/share";
 import { RECEIPTS_BUCKET, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
 import { signedUrl } from "../../../lib/upload";
+import { BillCheck, loadCheck } from "../../../lib/billcheck";
+import { BillCheckCard } from "../../../components/BillCheckCard";
 
 type Receipt = { id: string; path: string; mime: string | null; uploaded_by: string; created_at: string };
 type Full = Omit<Expense, "saath_receipts"> & { saath_receipts: Receipt[] };
@@ -26,6 +28,7 @@ export default function ExpenseView() {
     if (error) throw error;
     return { e: e as Full, charges: (charges ?? []) as any };
   }, [eid]);
+  const check = useLoad<BillCheck | null>(() => loadCheck(eid), [eid]);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [big, setBig] = useState<string | null>(null);
 
@@ -69,6 +72,8 @@ export default function ExpenseView() {
         </Text>
         {e.notes ? <Text style={[T.body, { color: C.ink }]}>{e.notes}</Text> : null}
       </Card>
+
+      <BillCheckCard expenseId={e.id} check={check.data ?? null} currency={cur} plan={s.circle.plan} onChange={(c) => check.setData(c)} />
 
       <Section title={t("receipts")} action={canEdit ? <Button small kind="ghost" icon="add" label={t("add")} onPress={() => router.push({ pathname: "/circle/[id]/expense", params: { id, eid } })} /> : undefined}>
         {e.saath_receipts.length === 0 ? <Card><Text style={[T.small, { color: C.ink3 }]}>{t("no_receipt_yet")}</Text></Card> : (

@@ -13,6 +13,7 @@ import { copy, openWhatsApp, shareText } from "../../../lib/share";
 import { methodDef } from "../../../lib/payments";
 import { callFn, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
+import { billCheckAllowed, loadCircleChecks, openFlags, openRisk, runCheck } from "../../../lib/billcheck";
 
 type Tab = "overview" | "expenses" | "payments" | "people";
 
@@ -217,6 +218,21 @@ function activityText(x: Ctx, a: Activity) {
 // ---------------------------------------------------------------- Expenses
 function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null }) {
   const { t, lang, id, cur, c, admin, me } = x;
+  const checks = useLoad(() => loadCircleChecks(id), [id]);
+  const [progress, setProgress] = useState<{ i: number; n: number } | null>(null);
+  const flagged = (items ?? []).filter((e) => ["medium", "high"].includes(openRisk(checks.data?.[e.id])));
+  const unchecked = (items ?? []).filter((e) => !checks.data?.[e.id]);
+  const checkAll = async () => {
+    if (!billCheckAllowed(c.plan)) { notify(t("bc_plus_title"), t("bc_plus_text")); return; }
+    const todo = unchecked.length ? unchecked : (items ?? []);
+    let done = 0;
+    for (let i = 0; i < todo.length; i++) {
+      setProgress({ i: i + 1, n: todo.length });
+      try { await runCheck(todo[i].id, lang); done++; } catch (e: any) { if (e?.code === "upgrade_required" || e?.code === "scan_limit") break; }
+    }
+    setProgress(null); checks.reload();
+    notify(t("bc_done_all", { n: done }));
+  };
   const groups = useMemo(() => {
     const g = new Map<string, Expense[]>();
     for (const e of items ?? []) { const k = e.spent_on.slice(0, 7); g.set(k, [...(g.get(k) ?? []), e]); }
@@ -226,6 +242,17 @@ function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null
   if (!items.length) return <Empty icon="receipt-outline" title={t("no_expenses_title")} text={t("no_expenses_text")} />;
   return (
     <>
+      <Card tone={flagged.length ? "owe" : undefined}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
+          <Icon name={flagged.length ? "shield-half-outline" : "shield-checkmark-outline"} size={24} color={flagged.length ? C.owe : C.primary} />
+          <View style={{ flex: 1 }}>
+            <Text style={[T.h3, { color: C.ink }]}>{t("bc_summary_title")}</Text>
+            <Text style={[T.small, { color: C.ink2 }]}>{flagged.length ? t("bc_summary_n", { n: flagged.length, m: unchecked.length }) : t("bc_summary_clear", { m: unchecked.length })}</Text>
+          </View>
+        </View>
+        <Button small kind="secondary" icon="shield-checkmark-outline" loading={!!progress}
+          label={progress ? t("bc_checking_x", { i: progress.i, n: progress.n }) : t("bc_check_all")} onPress={checkAll} />
+      </Card>
       {groups.map(([k, list]) => (
         <Section key={k} title={monthLabel(k + "-01", lang)} action={<Text style={[T.small, { color: C.ink2, fontWeight: "700" }]}>{money(list.reduce((a, e) => a + Number(e.amount), 0), cur, lang)}</Text>}>
           <Card style={{ paddingVertical: 4 }}>
@@ -238,6 +265,8 @@ function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null
                 subtitle={[dateLabel(e.spent_on, lang), e.paid_by_member_id ? t("paid_by_x", { name: memberName(s, e.paid_by_member_id) }) : e.vendor].filter(Boolean).join(" · ")}
                 right={<View style={{ alignItems: "flex-end", gap: 2 }}>
                   <Text style={[T.body, { color: C.ink, fontWeight: "700" }]}>{money(e.amount, cur, lang)}</Text>
+                  {(() => { const r = openRisk(checks.data?.[e.id]); const n = openFlags(checks.data?.[e.id]).length;
+                    return r === "high" || r === "medium" ? <Pill tone={r === "high" ? "owe" : "pending"} text={`⚠ ${n}`} /> : null; })()}
                   {e.saath_receipts?.length ? <Icon name="attach" size={16} color={C.ink3} /> : <Text style={[T.tiny, { color: C.accent }]}>{t("no_receipt")}</Text>}
                 </View>} />
             ))}

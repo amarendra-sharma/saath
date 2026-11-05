@@ -33,7 +33,7 @@
 <body>
 <header><div class="wrap">
   <h1>Saath Privacy Policy</h1>
-  <p>Effective 4 November 2026 · Saath is provided by MacroNations LLC, New York, USA</p>
+  <p>Effective 5 November 2026 · Saath is provided by MacroNations LLC, New York, USA</p>
 </div></header>
 <main>
 
@@ -62,6 +62,7 @@
       <tr><td><strong>Circle content</strong></td><td>Circle name and purpose, members and their percentage shares, bills (amount, date, category, who was paid, notes), receipt photos and PDFs, payment records, transaction references, payment screenshots, balance adjustments</td><td>The core purpose of the app: tracking shared costs and contributions</td></tr>
       <tr><td><strong>Receiver payment details</strong></td><td>Details an organiser enters for whoever receives the money: UPI ID, Wise tag, PayPal.me name, bank account number, IFSC, IBAN, SWIFT and similar</td><td>So members can pay the right person or organisation easily</td></tr>
       <tr><td><strong>People added by an organiser</strong></td><td>Name, relation, phone number and email of a family member who may not use the app</td><td>To include them in the split and send them reminders</td></tr>
+      <tr><td><strong>Bill reading and Bill Check results</strong></td><td>Amounts, dates, line items, vendor details and warnings read from bills you upload or scan</td><td>To fill in bills for you and to warn the circle about possible billing mistakes or overcharging</td></tr>
       <tr><td><strong>Activity and reminder logs</strong></td><td>A record of who added, edited or confirmed what and when; a log of reminders sent and whether delivery succeeded</td><td>Transparency for circle members, and troubleshooting</td></tr>
       <tr><td><strong>Basic technical data</strong></td><td>IP address, timestamps, error logs kept by our hosting provider</td><td>Security, preventing abuse, keeping the service running</td></tr>
     </tbody>
@@ -77,6 +78,7 @@
   <ul>
     <li>To provide the app: calculating each person's share, balances and statements, and showing circle activity.</li>
     <li>To send reminders and service messages by WhatsApp or email, such as dues reminders and password-reset codes, when these are enabled.</li>
+    <li>To read bills you scan, and to run <strong>Bill Check</strong>: automated warnings about arithmetic errors, prices above MRP or local norms, expired items, invalid tax numbers, duplicates and signs that a bill was altered. These are aids for your family, not findings about anyone; you decide what to do with them.</li>
     <li>To keep Saath secure, prevent misuse and fix problems.</li>
     <li>To meet legal obligations.</li>
   </ul>
@@ -92,12 +94,15 @@
       <ul>
         <li><strong>Supabase</strong> (database, authentication, file storage and server functions; hosted in the United States)</li>
         <li><strong>Resend</strong> (sending email)</li>
+        <li><strong>Anthropic</strong> (the Claude AI model, which reads the bill files you scan or check; Anthropic processes them only to return the result and, under its commercial terms, does not use them to train its models)</li>
         <li><strong>Meta Platforms / WhatsApp Business</strong> (sending WhatsApp reminders, if enabled; WhatsApp receives the recipient's number and the message text)</li>
       </ul>
     </li>
     <li><strong>Authorities</strong>, if the law requires it, or to protect the safety, rights or property of people or of Saath.</li>
   </ul>
   <p>We never sell, rent or trade personal information.</p>
+  <h3>Local price comparison</h3>
+  <p>To compare prices, Bill Check searches the web for item or service names (for example "pantoprazole 40mg tablet" or "HRCT thorax") together with your circle's city. No names, phone numbers or other personal details are included in these searches. Saath also keeps an <strong>anonymous price record</strong> of line items — item name, unit price, city, type of seller and date — with no link to any user, circle or patient, so that later checks can show what people typically pay locally.</p>
   <h3>Payment apps</h3>
   <p>When you tap "Open UPI", "Open Wise" or a similar button, Saath opens that provider's app or website with details filled in. Saath does not receive, hold or transfer money and never sees your banking login. The provider's own terms and privacy policy apply to the payment.</p>
   <h3>Shared sign-in with MacroNations</h3>

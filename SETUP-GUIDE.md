@@ -134,3 +134,17 @@ Cost is roughly ₹1–2 for a one-page bill, and more for long scanned PDFs, si
   - Deleting a Saath account never removes a course login.
 - **Adding a language:** copy `src/lib/strings.hi.ts`, translate it, and add it in `src/lib/strings.ts`.
 - **Your live course projects were not changed,** except two standard Supabase extensions enabled in strategyarena: `pg_cron` (for the daily job) and `pg_net` (to call the reminder function).
+
+## 8. Bill Check (overbilling and tampering warnings)
+
+Bill Check is already switched on and uses the same `ANTHROPIC_API_KEY` as bill scanning. There's nothing to set up.
+
+- **Where it shows:** on each bill (a "Bill Check" card), as a ⚠ badge in the Expenses list, and as a "Check all bills" button at the top of Expenses.
+- **City for local prices:** Circle settings → Bill Check → City. Price lookups use it.
+- **Cost:** about ₹2–8 per bill (the AI reads the bill, plus a few web searches). Price lookups are cached for 30 days, so the same medicine or test isn't looked up twice.
+
+### Making it a paid feature later
+1. In Supabase → Edge Functions → Secrets, add `SAATH_BILL_CHECK_PAID` = `true`.
+2. In `src/lib/billcheck.ts`, change `BILL_CHECK_PAID = false` to `true` and push.
+3. Mark paying circles with SQL: `update saath_circles set plan = 'plus' where id = '<circle id>';`
+   (The app can't change `plan` itself, so members can't unlock it on their own.)

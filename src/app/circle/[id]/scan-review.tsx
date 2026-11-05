@@ -9,6 +9,7 @@ import { money, parseAmount, todayISO } from "../../../lib/format";
 import { ScanDoc, isBill, setPendingScan, takePendingScan } from "../../../lib/scan";
 import { errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
+import { billCheckAllowed, runCheck } from "../../../lib/billcheck";
 
 type Row = ScanDoc & { key: number; on: boolean; amountText: string; titleText: string };
 
@@ -38,6 +39,7 @@ export default function ScanReview() {
     const bad = chosen.find((r) => parseAmount(r.amountText) <= 0);
     if (bad) { notify(t("scan_fix_row", { title: bad.titleText || "—" })); return; }
     setBusy(true);
+    const added: string[] = [];
     try {
       for (const r of chosen) {
         const pages = r.pages?.length ? (r.pages.length > 1 ? `p. ${r.pages[0]}–${r.pages[r.pages.length - 1]}` : `p. ${r.pages[0]}`) : "";
@@ -50,6 +52,10 @@ export default function ScanReview() {
         if (error) throw error;
         const { error: e2 } = await supabase.from("saath_receipts").insert({ expense_id: data.id, circle_id: id, path: scan.path, mime: scan.mime, size_bytes: scan.size });
         if (e2) throw e2;
+        added.push(data.id);
+      }
+      if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan)) {
+        (async () => { for (const x of added) { try { await runCheck(x, lang); } catch { break; } } })();
       }
       setPendingScan(null);
       notify(t("scan_added", { n: chosen.length, total: money(total, cur, lang) }));

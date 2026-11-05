@@ -12,6 +12,7 @@ import { C, S, T } from "../../../lib/theme";
 import { LocalFile, pickPdf, pickPhotos, takePhoto, uploadFile } from "../../../lib/upload";
 import { ScanResult, isBill, scanFile, setPendingScan } from "../../../lib/scan";
 import { ActivityIndicator } from "react-native";
+import { billCheckAllowed, runCheck } from "../../../lib/billcheck";
 
 const shift = (iso: string, days: number) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 
@@ -136,6 +137,8 @@ export default function ExpenseForm() {
         const { error } = await supabase.from("saath_receipts").insert({ expense_id: expenseId, circle_id: id, path, mime: f.mime, size_bytes: f.size ?? null });
         if (error) throw error;
       }
+      // Bill Check runs in the background; its result appears on the bill
+      if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan) && (scanned || files.length) && expenseId) runCheck(expenseId, lang).catch(() => {});
       router.back();
     } catch (e) { notify(t("something_wrong"), errText(e)); }
     finally { setBusy(false); }

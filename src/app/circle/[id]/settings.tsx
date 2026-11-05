@@ -46,6 +46,7 @@ export default function CircleSettings() {
       split_mode: f.split_mode, budget_amount: f.split_mode === "budget" ? parseAmount(f.budget) : null, period: f.period,
       due_day: weekly ? Math.min(f.due_day, 7) : f.due_day, require_confirmation: f.require_confirmation,
       remind_whatsapp: f.remind_whatsapp, remind_email: f.remind_email,
+      city: f.city?.trim() || null, bill_check_auto: !!f.bill_check_auto,
     }).eq("id", id);
     setBusy(false);
     if (error) notify(t("something_wrong"), errText(error)); else { notify(t("saved")); sum.reload(); }
@@ -89,6 +90,13 @@ export default function CircleSettings() {
           <Toggle label={t("remind_whatsapp")} value={f.remind_whatsapp} onChange={(v) => set("remind_whatsapp", v)} />
           <Toggle label={t("remind_email")} value={f.remind_email} onChange={(v) => set("remind_email", v)} />
           <Toggle label={t("confirm_payments")} hint={t("confirm_payments_hint")} value={f.require_confirmation} onChange={(v) => set("require_confirmation", v)} />
+        </Card>
+      </Section>
+
+      <Section title={t("bc_title")}>
+        <Field label={t("bc_city")} value={f.city ?? ""} onChangeText={(v) => set("city", v)} placeholder={t("bc_city_ph")} />
+        <Card>
+          <Toggle label={t("bc_auto")} hint={t("bc_auto_hint")} value={!!f.bill_check_auto} onChange={(v) => set("bill_check_auto", v)} />
         </Card>
       </Section>
 
