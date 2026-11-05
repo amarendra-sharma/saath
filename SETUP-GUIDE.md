@@ -24,9 +24,10 @@ Everything here is done through GitHub Desktop and websites. No Terminal needed.
 ## 2. Use it on the web right away (optional)
 
 1. On github.com, open the `saath` repo and go to **Settings → Pages**. Set **Source** to **GitHub Actions**.
-2. The "Deploy Saath web" action runs on every push. Your app will appear at `https://amarendra-sharma.github.io/saath/`.
-   - It works best on its own domain. In Pages, set the custom domain to `saath.macronations.com`.
-   - Then add a DNS **CNAME** record `saath → amarendra-sharma.github.io`.
+2. The "Deploy Saath web" action runs on every push. The app is served at **https://saath.macronations.com** (like the other MacroNations courses):
+   - DNS: a **CNAME** record `saath → amarendra-sharma.github.io` at the macronations.com DNS provider.
+   - GitHub: Settings → Pages → Custom domain = `saath.macronations.com`, then tick **Enforce HTTPS** once it's offered.
+   - The app is built for the domain's root (no `/saath` path), so the old `amarendra-sharma.github.io/saath/` address redirects to the new one.
 
 ## 3. Build the phone apps (Expo, free tier)
 
@@ -46,7 +47,7 @@ You need two store accounts:
 
 Both stores ask for:
 
-- **A privacy-policy web page.** It's written: `public/privacy.html`, linked in the app (sign-up screen and Profile). Once step 2 is done it's live at `https://amarendra-sharma.github.io/saath/privacy.html` (or `https://saath.macronations.com/privacy.html` with the custom domain). Paste that URL into both store listings. Make sure `privacy@macronations.com` receives mail, or change the address in the file.
+- **A privacy-policy web page.** It's written: `public/privacy.html`, linked in the app (sign-up screen and Profile). Once step 2 is done it's live at `https://saath.macronations.com/privacy.html`. Paste that URL into both store listings. Make sure `privacy@macronations.com` receives mail, or change the address in the file.
 - **Screenshots.** I made phone screenshots during testing that you can use.
 - **Account deletion.** Already built: Profile → Delete my account.
 - **Short description:** "Share the cost of caring for someone you love — bills, receipts, fair splits and gentle reminders."
