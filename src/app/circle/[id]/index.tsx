@@ -13,7 +13,7 @@ import { copy, openWhatsApp, shareText } from "../../../lib/share";
 import { methodDef } from "../../../lib/payments";
 import { callFn, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
-import { billCheckAllowed, loadCircleChecks, openFlags, openRisk, runCheck } from "../../../lib/billcheck";
+import { AI_LIMIT_CODES, billCheckAllowed, loadCircleChecks, openFlags, openRisk, runCheck } from "../../../lib/billcheck";
 
 type Tab = "overview" | "expenses" | "payments" | "people";
 
@@ -228,7 +228,7 @@ function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null
     let done = 0;
     for (let i = 0; i < todo.length; i++) {
       setProgress({ i: i + 1, n: todo.length });
-      try { await runCheck(todo[i].id, lang); done++; } catch (e: any) { if (e?.code === "upgrade_required" || e?.code === "scan_limit") break; }
+      try { await runCheck(todo[i].id, lang); done++; } catch (e: any) { if (AI_LIMIT_CODES.includes(e?.code)) break; }
     }
     setProgress(null); checks.reload();
     notify(t("bc_done_all", { n: done }));

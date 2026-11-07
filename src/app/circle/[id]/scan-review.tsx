@@ -55,7 +55,7 @@ export default function ScanReview() {
         added.push(data.id);
       }
       if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan)) {
-        (async () => { for (const x of added) { try { await runCheck(x, lang); } catch { break; } } })();
+        (async () => { for (const x of added) { try { await runCheck(x, lang, true); } catch { break; } } })();
       }
       setPendingScan(null);
       notify(t("scan_added", { n: chosen.length, total: money(total, cur, lang) }));

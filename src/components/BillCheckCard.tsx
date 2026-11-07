@@ -29,8 +29,17 @@ export function BillCheckCard({ expenseId, check, currency, plan, onChange }: {
   const run = async () => {
     if (!billCheckAllowed(plan)) { notify(t("bc_plus_title"), t("bc_plus_text")); return; }
     setBusy(true);
-    try { onChange(await runCheck(expenseId, lang)); }
-    catch (e: any) { notify(t("bc_failed"), e?.code === "upgrade_required" ? t("bc_plus_text") : e?.code === "scan_limit" ? t("err_scan_limit") : errText(e)); }
+    try {
+      const r = await runCheck(expenseId, lang);
+      onChange(r);
+      // allowance used up: the free checks still ran; say why the AI part didn't
+      if (r.ai?.limit_reached) notify(t("bc_limit_title"), r.ai.message || t("err_ai_limit_reached"));
+    }
+    catch (e: any) {
+      const code = e?.code;
+      notify(t("bc_failed"), code === "upgrade_required" ? t("bc_plus_text")
+        : code && t("err_" + code) !== "err_" + code ? t("err_" + code) : e?.serverMessage || errText(e));
+    }
     finally { setBusy(false); }
   };
   const toggle = async (f: CheckFlag, undo: boolean) => {

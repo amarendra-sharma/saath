@@ -10,7 +10,7 @@ import { callFn, errText, supabase } from "../lib/supabase";
 import { C, S, T } from "../lib/theme";
 
 export default function Profile() {
-  const { t, lang, setLang, profile, refreshProfile, session } = useApp();
+  const { t, lang, setLang, profile, refreshProfile, session, isAdmin } = useApp();
   const [name, setName] = useState(profile?.full_name ?? "");
   const [phone, setPhone] = useState(profile?.phone ?? "");
   const [wa, setWa] = useState(profile?.notify_whatsapp ?? true);
@@ -66,6 +66,7 @@ export default function Profile() {
         </Card>
       </Section>
       <View style={{ gap: S.sm }}>
+        {isAdmin ? <Button kind="secondary" icon="shield-half-outline" label="Admin console" onPress={() => router.push("/admin")} /> : null}
         <Button kind="ghost" icon="shield-checkmark-outline" label={t("privacy_policy")} onPress={() => openUrl((Constants.expoConfig?.extra as any)?.privacyUrl)} />
         <Button kind="secondary" icon="log-out-outline" label={t("sign_out")} onPress={signOut} />
         <Button kind="danger" icon="trash-outline" label={t("delete_account")} onPress={del} />

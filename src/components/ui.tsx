@@ -164,7 +164,7 @@ export function Segmented<V extends string>({ options, value, onChange }: { opti
 }
 
 export function Avatar({ name, size = 40, tone = 0 }: { name: string; size?: number; tone?: number }) {
-  const palette = [["#E1EFEA", C.primaryDark], ["#FBEBD2", "#8A5410"], ["#E6E4F5", "#463C8F"], ["#FBE6DC", "#8F3412"], ["#E2EEF7", "#1F4E79"]];
+  const palette = [["#E8EEF8", "#1A3A6E"], ["#F8EFDD", "#7A5410"], ["#ECE9F7", "#463C8F"], ["#E3F2EE", "#0F5F55"], ["#FCE9E4", "#8F3412"]];
   const [bg, fg] = palette[Math.abs(tone) % palette.length];
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: bg, alignItems: "center", justifyContent: "center" }}>
@@ -177,7 +177,7 @@ export const hashTone = (s: string) => [...(s || "")].reduce((a, c) => a + c.cha
 export function Row({ left, title, subtitle, right, onPress, last }: { left?: React.ReactNode; title: string; subtitle?: string; right?: React.ReactNode; onPress?: () => void; last?: boolean }) {
   return (
     <Pressable disabled={!onPress} onPress={onPress} accessibilityRole={onPress ? "button" : undefined}
-      style={({ pressed }) => [st.row, !last && st.rowLine, pressed && onPress && { backgroundColor: "#FAF8F3" }]}>
+      style={({ pressed }) => [st.row, !last && st.rowLine, pressed && onPress && { backgroundColor: C.pressed }]}>
       {left}
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[T.body, { color: C.ink, fontWeight: "600" }]} numberOfLines={1}>{title}</Text>
@@ -266,17 +266,17 @@ export function Toggle({ label, value, onChange, hint }: { label: string; value:
 }
 
 export const st = StyleSheet.create({
-  card: { borderRadius: R.lg, padding: S.lg, gap: S.sm, ...(shadow as any) },
+  card: { borderRadius: R.lg, padding: S.lg, gap: S.sm, borderWidth: StyleSheet.hairlineWidth, borderColor: C.line, ...(shadow as any) },
   btn: { height: 54, borderRadius: R.md, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingHorizontal: S.lg },
   btnSmall: { height: 40, borderRadius: R.sm, paddingHorizontal: S.md },
   iconBtn: { width: 42, height: 42, borderRadius: 21, alignItems: "center", justifyContent: "center" },
-  input: { backgroundColor: C.card, borderWidth: 1.5, borderColor: C.line, borderRadius: R.md, paddingHorizontal: S.md, minHeight: 52, fontSize: 17, color: C.ink },
-  chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, height: 38, borderRadius: R.pill, borderWidth: 1.5, borderColor: C.line, backgroundColor: C.card },
-  seg: { flexDirection: "row", backgroundColor: "#ECE7DC", borderRadius: R.md, padding: 4, gap: 4 },
+  input: { backgroundColor: C.card, borderWidth: 1, borderColor: C.line, borderRadius: R.md, paddingHorizontal: S.md, minHeight: 52, fontSize: 17, color: C.ink },
+  chip: { flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 14, height: 38, borderRadius: R.pill, borderWidth: 1, borderColor: C.line, backgroundColor: C.card },
+  seg: { flexDirection: "row", backgroundColor: C.segBg, borderRadius: R.md, padding: 4, gap: 4 },
   segItem: { flex: 1, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 6, paddingHorizontal: 4 },
   badge: { minWidth: 18, height: 18, borderRadius: 9, backgroundColor: C.owe, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
   row: { flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.md, paddingHorizontal: S.xs },
   rowLine: { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: C.line },
-  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: S.lg, paddingTop: S.md, backgroundColor: "rgba(246,243,236,0.96)", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.line },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: S.lg, paddingTop: S.md, backgroundColor: "rgba(244,246,250,0.96)", borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: C.line },
   sheet: { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: S.lg },
 });

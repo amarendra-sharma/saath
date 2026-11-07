@@ -37,3 +37,44 @@ The backend lives in the Supabase project **strategyarena** (`qgelvmefyexyzpwqup
 - A daily job, `saath-daily-reminders`, runs at 13:23 UTC (6:53 pm in India, 8:23 am in New York).
 
 To move Saath to its own project later, run the five migration files in order on the new project, deploy the four functions, and change `extra.supabaseUrl` and `extra.supabaseKey` in `app.json`.
+
+## How Saath uses AI and what it costs
+
+Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-fill the form) and **Bill Check** (looking for signs a bill is wrong). Every call is logged with its cost in `saath_ai_usage`; view `saath_ai_v_daily` shows spend per day, function and model.
+
+**Reading a bill.** Claude Haiku (cheap) reads every file first. Claude Sonnet takes a second look at the amounts only when it isn't safe to trust Haiku alone: Haiku isn't confident, the bill is handwritten or in an Indian script, the numbers don't add up, or nothing was found. In tests Haiku and Sonnet agreed on handwritten amounts except one photo where both were unsure, so handwritten and Indian-script bills always get the Sonnet check (settings `haiku_handwritten`, `haiku_indic`). If both are unsure, the app shows the amount as low confidence for the family to check. It never guesses.
+
+**Bill Check.** It runs cheapest first:
+1. Rules in code, which are free: arithmetic, above-MRP prices, expired stock, the GSTIN checksum, duplicates, dates and the patient name.
+2. The read from the scan is reused, so the file isn't read twice. A full Sonnet forensic read happens only when someone taps "Check again" on a bill of ₹10,000 or more (`escalate_amount`), a poor copy, or a bill that doesn't add up.
+3. Prices are first compared with what other Saath users paid locally, which is free. A web search runs only for the top 3 items of ₹500 or more, at most 2 searches, and only when local data is thin. Results are cached for 30 days and shared across circles. Web search never runs on the automatic check after adding a bill. When `SAATH_BILL_CHECK_PAID=true`, it runs only on the paid plan.
+
+**Cost per bill** (one phone photo, read and automatically checked; measured November 2026):
+
+| Bill | Before | Now |
+|---|---|---|
+| Printed, clear | ~$0.04 | ~$0.0013 |
+| Handwritten, photo resized by the app (1600 px) | ~$0.04 | ~$0.011–0.015 |
+| Handwritten, full-size photo (older app) | ~$0.04 | ~$0.016 |
+| "Check again" on a handwritten bill of ₹10,000+ | ~$0.02 | +~$0.013–0.022 |
+
+**Limits** (table `saath_ai_config`; change a value with `update saath_ai_config set value='10' where key='daily_cap_usd';`):
+- $2 per circle per month (`saath_circles.ai_monthly_cap_usd`). When it runs out, the app says so, bills can still be added by hand, and the free rules still run.
+- $5 per day across the whole app (`daily_cap_usd`).
+- 30 scans per person per day, 40 checks per circle per day, and 20 AI calls per person per hour.
+- Files over 15 MB or PDFs over 40 pages are refused with a clear message.
+- An alert row goes into `saath_ai_alerts` (emailed through Resend if `RESEND_API_KEY` is set) the first time a day's spend passes $1 (`alert_daily_usd`), or when a cap is hit.
+
+**Secrets / settings the functions read** (Supabase → Edge Functions → Secrets): `ANTHROPIC_API_KEY` (required); optional `SAATH_FAST_MODEL` (default `claude-haiku-5-5`), `SAATH_STRONG_MODEL` (default `claude-sonnet-5-5`), `SAATH_PRICE_MODEL` (default Haiku), `SAATH_BILL_CHECK_PAID` (`true` = web price check only on the paid plan), `RESEND_API_KEY` and `SAATH_EMAIL_FROM` (alert emails). The older `SAATH_SCAN_MODEL` / `SAATH_CHECK_MODEL` are no longer used.
+
+**Quality test.** `eval/compare.py` compares Haiku against Sonnet on a test set and fails if handwritten or Indian-language amounts differ. Run it again whenever models or prompts change.
+
+## Admin console
+
+Admins see a shield button on the home screen and an "Admin console" button in Profile (route `/admin`). It has four tabs:
+- **Overview:** AI spend today, this month and all time, with the daily cap and a 30-day chart; counts of people, circles, bills and scans; spend by feature; alerts; and a banner when Anthropic credit runs out.
+- **Circles:** plan (Free/Plus), the monthly AI allowance, automatic Bill Check, and archiving.
+- **People:** search everyone, and make someone an admin or remove admin access.
+- **Settings:** feature switches (AI bill reading, AI in Bill Check, web price search, Bill Check only on Plus), limits, alerts and advanced AI settings. Changes apply to the next bill read or check.
+
+Admins are listed in `saath_admins` (first admin: the owner). Every admin action goes through a SECURITY DEFINER function that refuses non-admins (migration 013). The app never holds a service key.

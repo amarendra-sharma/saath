@@ -37,8 +37,9 @@ export async function callFn<T = any>(name: string, body: unknown, authed = fals
   const r = await fetch(`${SUPABASE_URL}/functions/v1/${name}`, { method: "POST", headers, body: JSON.stringify(body) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.error) {
-    const e = new Error(j.error || `http_${r.status}`);
+    const e = new Error(j.message || j.error || `http_${r.status}`);
     (e as any).code = j.error;
+    (e as any).serverMessage = j.message;   // e.g. AI allowance used up: the server explains in plain words
     throw e;
   }
   return j as T;

@@ -1,16 +1,17 @@
-// saath-check — "Bill Check": looks for signs a bill is wrong, inflated or tampered with.
-// Three layers, all ending as warnings for the family to review (never accusations):
-//   1. Forensic read of the bill file (Claude vision): line items, MRP, expiry, GSTIN,
-//      amount in words, and visual signs of editing — overwriting, mismatched ink, whitener, pasted areas…
-//   2. Rules in code: arithmetic, above-MRP, expired stock, invalid GSTIN, duplicates, date and
-//      bill-number anomalies, patient-name mismatch, prices far above what other Saath users paid locally.
-//   3. Local market check (Claude + web search): typical prices, government ceiling prices (NPPA),
-//      CGHS / scheme rates and pharmacy listings for the most expensive items, cached for 30 days.
-// Deploy with verify_jwt = true.  Body: { expense_id, language? }
-// Secrets: ANTHROPIC_API_KEY. Optional: SAATH_CHECK_MODEL, SAATH_BILL_CHECK_PAID ("true" → needs plan 'plus').
+// saath-check (v2 pipeline) — "Bill Check": looks for signs a bill is wrong, inflated or tampered with.
+// Stages, cheapest first, all ending as warnings for the family to review (never accusations):
+//   (a) rules in code — free: arithmetic, above-MRP, expired stock, GSTIN checksum, duplicates, dates, patient name;
+//   (b) forensic read — reuses the scan's read of the same file when there is one; otherwise Haiku reads it.
+//       Sonnet re-reads only for high-value bills, poor copies, or reads that don't add up (manual checks only);
+//   (c) local price check — what Saath users paid locally first; web search only for the top items above a
+//       minimum amount, when local data is thin, never on automatic runs, and only on the paid plan when
+//       SAATH_BILL_CHECK_PAID=true. Results cached 30 days per item + city, shared across circles.
+// Deploy with verify_jwt = true. Body: { expense_id, language?, auto? }
+// Secrets: ANTHROPIC_API_KEY. Optional: SAATH_BILL_CHECK_PAID, SAATH_PRICE_MODEL. Settings: table saath_ai_config.
 import { createClient } from "npm:@supabase/supabase-js@2";
-import { PDFDocument } from "npm:pdf-lib@1.17.1";
-import { encodeBase64 } from "jsr:@std/encoding@1/base64";
+import { anthropic, UsageCtx } from "../_shared/ai_usage.ts";
+import { cachedRead, escalationReasons, HAIKU, prepareFile, readBill, SONNET, storeRead } from "../_shared/bill_read.ts";
+import { afterCalls, allowance, guard, GuardResult, loadConfig } from "../_shared/guard.ts";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -22,28 +23,16 @@ const json = (b: unknown, status = 200) =>
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const admin = createClient(URL_, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 const KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
-const MODEL = Deno.env.get("SAATH_CHECK_MODEL") ?? "claude-sonnet-5-5";
-const PAID = (Deno.env.get("SAATH_BILL_CHECK_PAID") ?? "false") === "true";
+const PRICE_MODEL = Deno.env.get("SAATH_PRICE_MODEL") ?? HAIKU;
+const PAID_ENV = (Deno.env.get("SAATH_BILL_CHECK_PAID") ?? "false") === "true";
+const FN = Deno.env.get("SAATH_FN_NAME") ?? "saath-check";
 const LANG_NAME: Record<string, string> = { en: "English", hi: "Hindi", bn: "Bengali", es: "Spanish", fr: "French", pt: "Portuguese" };
-const DAILY_LIMIT = 150;          // checks per circle per day
-const MAX_BYTES = 30 * 1024 * 1024;
 const PRICED_CATEGORIES = ["hospital", "doctor", "medicine", "tests", "nursing", "therapy", "equipment"];
 
 type Sev = "high" | "medium" | "low" | "info";
 type Flag = { code: string; severity: Sev; params?: Record<string, unknown>; detail?: string; source?: "rule" | "visual" | "price" };
 const W: Record<Sev, number> = { high: 40, medium: 15, low: 5, info: 0 };
 
-// ───────────────────────────── Claude helpers ─────────────────────────────
-async function claude(body: Record<string, unknown>) {
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "x-api-key": KEY, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-    body: JSON.stringify({ model: MODEL, ...body }),
-  });
-  const out = await r.json();
-  if (!r.ok) throw new Error(out?.error?.message ?? `anthropic_${r.status}`);
-  return out;
-}
 function toolInput(out: any, name: string) {
   const tu = (out.content ?? []).find((c: any) => c.type === "tool_use" && c.name === name);
   if (tu) return tu.input;
@@ -51,123 +40,20 @@ function toolInput(out: any, name: string) {
   const m = text.match(/\{[\s\S]*\}/);
   try { return m ? JSON.parse(m[0]) : null; } catch { return null; }
 }
-
-// ───────────────────────────── 1. forensic read ─────────────────────────────
-const AUDIT_TOOL = {
-  name: "record_audit",
-  description: "Record what the bill(s) say and any visual signs that the document was altered.",
-  input_schema: {
-    type: "object",
-    properties: {
-      documents: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: {
-            doc_type: { type: "string", enum: ["bill", "payment_receipt", "settlement_summary", "deposit_receipt", "report", "prescription", "other"] },
-            vendor: { type: "string" }, vendor_kind: { type: "string", enum: ["pharmacy", "hospital", "clinic", "lab", "imaging", "nursing", "transport", "shop", "other"] },
-            vendor_city: { type: "string", description: "City from the vendor address, if printed." },
-            vendor_state: { type: "string" },
-            gstin: { type: "string", description: "GSTIN exactly as printed (15 chars), empty if none." },
-            registration_numbers: { type: "array", items: { type: "string" }, description: "Drug licence, clinic/hospital registration, PAN etc." },
-            bill_number: { type: "string" }, date: { type: "string", description: "YYYY-MM-DD; Indian bills are DD/MM/YYYY." },
-            patient_name: { type: "string" },
-            pages: { type: "array", items: { type: "integer" } },
-            handwritten: { type: "boolean", description: "Amounts or items are filled in by hand." },
-            items: {
-              type: "array", description: "Every line item.",
-              items: {
-                type: "object",
-                properties: {
-                  name: { type: "string", description: "As printed." },
-                  generic_key: { type: "string", description: "Lower-case normalised key for price comparison: generic/salt name + strength + form, or test/service name. e.g. 'pantoprazole 40mg tablet', 'hrct thorax', 'icu bed charge per day', 'cbc test'." },
-                  qty: { type: "number" }, unit: { type: "string", description: "tablet / strip / vial / bottle / day / test / visit / item" },
-                  rate: { type: "number", description: "Price charged per unit." },
-                  mrp: { type: "number", description: "Printed MRP per unit, if shown." },
-                  amount: { type: "number", description: "Line total as printed." },
-                  batch: { type: "string" }, expiry: { type: "string", description: "YYYY-MM or YYYY-MM-DD" },
-                  gst_percent: { type: "number" },
-                },
-                required: ["name", "generic_key", "amount"],
-              },
-            },
-            subtotal: { type: "number" }, discount: { type: "number" }, tax: { type: "number" },
-            grand_total: { type: "number", description: "Final payable/paid amount." },
-            amount_in_words: { type: "string", description: "Amount written in words, verbatim, if present." },
-            amount_in_words_value: { type: "number", description: "Numeric value of the amount in words." },
-            has_stamp: { type: "boolean" }, has_signature: { type: "boolean" },
-            visual_flags: {
-              type: "array",
-              description: "Only things you can actually see. Do not report normal scan blur or fold marks.",
-              items: {
-                type: "object",
-                properties: {
-                  kind: { type: "string", enum: ["overwritten_digits", "different_ink_or_hand", "whitener_or_erasure", "pasted_or_edited_region", "font_mismatch", "added_line_after_total", "date_altered", "blank_letterhead_filled_by_hand", "photocopy_of_copy", "cropped_or_missing_part", "other"] },
-                  severity: { type: "string", enum: ["high", "medium", "low"] },
-                  where: { type: "string", description: "Which field / line, e.g. 'grand total', 'qty of item 3'." },
-                  detail: { type: "string" },
-                },
-                required: ["kind", "severity", "detail"],
-              },
-            },
-            readability: { type: "string", enum: ["good", "fair", "poor"] },
-          },
-          required: ["doc_type", "items", "visual_flags", "readability"],
-        },
-      },
-    },
-    required: ["documents"],
-  },
-};
-
-function auditPrompt(lang: string, hint: string) {
-  return `You are a careful medical-bill auditor helping a family check bills before they share the cost. Read the document(s) and call record_audit once.
-${hint}
-- List EVERY line item with qty, unit rate, MRP (if printed), line amount, batch and expiry (pharmacy bills usually show these).
-- generic_key must be a normalised, lower-case description that would match the same product/service on another bill.
-- Copy GSTIN exactly as printed, character by character (it is 15 characters). Do not fix it.
-- amount_in_words: copy exactly; give its numeric value separately.
-- visual_flags: inspect closely like a forensic document examiner. Report only real, visible signs: digits written over other digits, a total or quantity in different ink or handwriting from the rest, whitener/erasure, a region whose background, font or alignment differs (pasted/edited), a line added below the total, an altered date, a blank pre-printed letterhead with everything handwritten, missing parts. Ordinary blur, folds, stamps or scanner noise are NOT flags. If nothing looks altered, return an empty list.
-- Write 'detail' and 'where' in ${LANG_NAME[lang] ?? "English"}; keep names and numbers as printed.
-Do not guess numbers you cannot read; leave them out.`;
-}
-
-async function pagesOf(bytes: Uint8Array, pages: number[]) {
-  const src = await PDFDocument.load(bytes, { ignoreEncryption: true });
-  const n = src.getPageCount();
-  const want = pages.filter((p) => p >= 1 && p <= n).map((p) => p - 1);
-  if (!want.length || want.length === n) return { bytes, total: n };
-  const out = await PDFDocument.create();
-  for (const pg of await out.copyPages(src, want)) out.addPage(pg);
-  return { bytes: new Uint8Array(await out.save()), total: n };
-}
-
-async function readFile(path: string): Promise<{ bytes: Uint8Array; mime: string }> {
-  const { data: blob, error } = await admin.storage.from("saath-receipts").download(path);
-  if (error || !blob) throw new Error("file_not_found");
-  if (blob.size > MAX_BYTES) throw new Error("file_too_large");
-  let mime = blob.type || "";
-  const lower = path.toLowerCase();
-  if (!mime || mime === "application/octet-stream") mime = lower.endsWith(".pdf") ? "application/pdf" : lower.endsWith(".png") ? "image/png" : lower.endsWith(".webp") ? "image/webp" : "image/jpeg";
-  return { bytes: new Uint8Array(await blob.arrayBuffer()), mime };
-}
-
 async function sha256(b: Uint8Array | string) {
   const d = typeof b === "string" ? new TextEncoder().encode(b) : b;
   return [...new Uint8Array(await crypto.subtle.digest("SHA-256", d as unknown as ArrayBuffer))].map((x) => x.toString(16).padStart(2, "0")).join("");
 }
-
-async function audit(fileBlock: unknown, lang: string, hint: string) {
-  const out = await claude({
-    max_tokens: 12000, tools: [AUDIT_TOOL], tool_choice: { type: "auto" },
-    messages: [{ role: "user", content: [fileBlock, { type: "text", text: auditPrompt(lang, hint) }] }],
-  });
-  return { result: toolInput(out, "record_audit") ?? { documents: [] }, usage: out.usage };
+function mimeOf(blob: Blob, path: string) {
+  const p = path.toLowerCase();
+  if (blob.type && blob.type !== "application/octet-stream") return blob.type;
+  return p.endsWith(".pdf") ? "application/pdf" : p.endsWith(".png") ? "image/png" : p.endsWith(".webp") ? "image/webp" : "image/jpeg";
 }
-
-const blockFor = (mime: string, bytes: Uint8Array) => mime === "application/pdf"
-  ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: encodeBase64(bytes) } }
-  : { type: "image", source: { type: "base64", media_type: mime, data: encodeBase64(bytes) } };
+// equivalent units share one cache entry (tab/tablet, inj/vial/ampoule, …)
+const UNIT: Record<string, string> = { tab: "tablet", tabs: "tablet", tablets: "tablet", cap: "capsule", caps: "capsule", capsules: "capsule",
+  inj: "vial", injection: "vial", amp: "vial", ampoule: "vial", vials: "vial", strips: "strip", str: "strip", btl: "bottle", bottles: "bottle",
+  nos: "unit", no: "unit", pcs: "unit", piece: "unit", pieces: "unit", item: "unit", days: "day", tests: "test", visits: "visit" };
+const unitKey = (u: unknown) => { const k = String(u ?? "unit").toLowerCase().replace(/[^a-z]/g, ""); return UNIT[k] ?? (k || "unit"); };
 
 // ───────────────────────────── 2. rules ─────────────────────────────
 const num = (v: unknown) => (typeof v === "number" && isFinite(v) ? v : Number.isFinite(Number(v)) && v !== "" && v != null ? Number(v) : null);
@@ -321,7 +207,6 @@ function circleRules(exp: any, doc: any | null, others: any[], otherChecks: any[
   const seen = new Set<string>();
   return f.filter((x) => { const k = x.code + (x.params?.other_id ?? ""); if (seen.has(k)) return false; seen.add(k); return true; }).slice(0, 6);
 }
-
 // ───────────────────────────── 3. market prices ─────────────────────────────
 const PRICE_TOOL = {
   name: "record_prices",
@@ -353,27 +238,24 @@ const PRICE_TOOL = {
 
 type PriceAsk = { key: string; name: string; unit: string; unit_price: number; qty: number; vendor_kind: string; mrp?: number | null };
 
-async function priceCheck(asks: PriceAsk[], city: string | null, country: string, currency: string, lang: string, date: string) {
+async function priceCheck(ctx: UsageCtx, asks: PriceAsk[], city: string | null, country: string, currency: string, lang: string, date: string) {
   if (!asks.length) return { items: [] as any[], searches: 0 };
   const list = asks.map((a, i) => `${i + 1}. key="${a.key}" — "${a.name}" — billed ${currency} ${a.unit_price} per ${a.unit || "unit"} (qty ${a.qty})${a.mrp ? `, printed MRP ${a.mrp}` : ""} — from a ${a.vendor_kind}`).join("\n");
   const prompt = `A family in ${city ? city + ", " : ""}${country} was billed for the items below around ${date}. For each, find what it normally costs in that area${city ? " (or the nearest comparable city)" : ""}.
-Use the web search tool. Good sources: for medicines — NPPA ceiling prices (nppaindia.nic.in / pharmasahi daam), 1mg, PharmEasy, Apollo, Netmeds MRP listings, Jan Aushadhi for the generic; for tests, scans and procedures — CGHS rates, PM-JAY package rates and price lists of local labs / diagnostic chains / hospitals; for room, ICU, nursing and doctor visits — published tariffs of hospitals of a similar tier in that city.
-Rules:
-- Compare per unit. A strip vs a tablet is a different unit — convert.
-- Be fair: private hospitals legitimately charge more than government rates; only call it "high" if the billed unit price is more than ~25% above the normal private upper end, "very_high" if more than about double, "above_ceiling" if it exceeds a government ceiling price that applies to that formulation.
-- "unknown" if you cannot find a reliable reference. Never invent numbers.
-- Write explanation in ${LANG_NAME[lang] ?? "English"}.
-Search at most a few times — combine items into one query where you can. Then call record_prices once with every item.
+Use web search, at most twice — combine all items into one query if you can. Good sources: NPPA ceiling prices, 1mg, PharmEasy, Apollo, Netmeds (medicines); CGHS / PM-JAY rates and local lab or hospital price lists (tests, scans, procedures); hospital tariffs of a similar tier (room, ICU, nursing, doctor visits).
+Rules: compare per unit (convert strip vs tablet). Private hospitals legitimately charge more than government rates: "high" only if >25% above the normal private upper end, "very_high" if about double, "above_ceiling" if above an applicable government ceiling. An item with unit "bill" covers a whole bill: if you cannot price every part, use "unknown". "unknown" if no reliable reference. Never invent numbers. Write explanation in ${LANG_NAME[lang] ?? "English"}.
+Then call record_prices once with every item.
 
 ${list}`;
   const tools: any[] = [
-    { type: "web_search_20250305", name: "web_search", max_uses: 5, user_location: { type: "approximate", ...(city ? { city } : {}), country } },
+    { type: "web_search_20250305", name: "web_search", max_uses: 2, user_location: { type: "approximate", ...(city ? { city } : {}), country } },
     PRICE_TOOL,
   ];
   const messages: any[] = [{ role: "user", content: prompt }];
   let searches = 0;
-  for (let round = 0; round < 4; round++) {
-    const out = await claude({ max_tokens: 6000, tools, tool_choice: { type: "auto" }, messages });
+  for (let round = 0; round < 2; round++) {
+    const { r, out } = await anthropic({ ...ctx, fn: `${ctx.fn}#${round + 1}` }, KEY, { model: PRICE_MODEL, max_tokens: 3000, tools, tool_choice: { type: "auto" }, messages });
+    if (!r.ok) throw new Error(out?.error?.message ?? `anthropic_${r.status}`);
     searches += out.usage?.server_tool_use?.web_search_requests ?? 0;
     const got = toolInput(out, "record_prices");
     if (got?.items) return { items: got.items, searches };
@@ -390,20 +272,31 @@ Deno.serve(async (req) => {
     if (!KEY) return json({ error: "scan_not_configured" }, 503);
     const body = await req.json().catch(() => ({}));
     const lang = String(body.language ?? "en").slice(0, 2);
+    const auto = body.auto === true;              // automatic run after adding a bill: rules + Haiku read only
+    const cfg = await loadConfig(admin);
 
-    // who is asking: a signed-in member, or the owner/scheduler with the vault key
+    // who is asking: a signed-in member, or the owner with the scheduler's vault key
     let userId: string | null = null;
     const ownerKey = req.headers.get("x-saath-cron");
     if (ownerKey) {
       const { data: ok } = await admin.rpc("saath_check_cron", { p_secret: ownerKey });
       if (ok !== true) return json({ error: "unauthorized" }, 401);
-      // owner self-test: inline file, rules + forensic read only, nothing stored
-      if (body.test_b64) {
-        const bytes = Uint8Array.from(atob(String(body.test_b64)), (c) => c.charCodeAt(0));
-        const fake = { amount: Number(body.test_amount ?? 0), spent_on: body.test_date ?? new Date().toISOString().slice(0, 10), title: "test", notes: null };
-        const { result } = await audit(blockFor(String(body.test_mime || "image/png"), bytes), lang, "Audit every bill in this file.");
-        const d = (result.documents ?? [])[0];
-        return json({ ok: true, documents: result.documents, flags: d ? docRules(d, fake.amount ? fake : { ...fake, amount: d.grand_total }, "IN") : [] });
+      // owner evaluation: forensic read + rules on a stored/inline file, optional forced model; nothing stored
+      if (body.test_b64 || body.test_path) {
+        let bytes: Uint8Array, mime: string;
+        if (body.test_path) {
+          const { data: blob, error } = await admin.storage.from("saath-receipts").download(String(body.test_path));
+          if (error || !blob) return json({ error: "file_not_found" }, 404);
+          bytes = new Uint8Array(await blob.arrayBuffer()); mime = mimeOf(blob, String(body.test_path));
+        } else { bytes = Uint8Array.from(atob(String(body.test_b64)), (c) => c.charCodeAt(0)); mime = String(body.test_mime || "image/png"); }
+        const t0 = Date.now();
+        const tcfg = { ...cfg, ...(body.test_cfg ?? {}) };
+        const prep = await prepareFile(bytes, mime, tcfg, Array.isArray(body.test_pages) ? body.test_pages.map(Number) : []);
+        const res = await readBill({ admin, fn: `${FN}:audit:eval` }, KEY, prep, { purpose: "audit", currency: "INR", lang, amountHint: Number(body.test_amount ?? 0) }, tcfg, body.test_model || undefined);
+        const d = (res.documents ?? []).find((x: any) => x.doc_type === "bill") ?? (res.documents ?? [])[0];
+        const fake = { amount: Number(body.test_amount ?? d?.amount ?? 0), spent_on: body.test_date ?? new Date().toISOString().slice(0, 10), title: "test", notes: null };
+        return json({ ok: true, ms: Date.now() - t0, model: res.model, escalated: res.escalated, reasons: res.reasons, sent_bytes: prep.bytesSent, resized: prep.resized,
+          documents: res.documents, flags: d ? docRules(d, fake, "IN") : [] });
       }
     } else {
       const auth = req.headers.get("Authorization") ?? "";
@@ -419,47 +312,80 @@ Deno.serve(async (req) => {
       if (!m) return json({ error: "forbidden" }, 403);
     }
     const { data: circle } = await admin.from("saath_circles").select("currency, city, country, plan").eq("id", exp.circle_id).single();
-    if (PAID && circle?.plan !== "plus") return json({ error: "upgrade_required" }, 402);
-    const since = new Date(Date.now() - 864e5).toISOString();
-    const { count } = await admin.from("saath_bill_checks").select("expense_id", { count: "exact", head: true }).eq("circle_id", exp.circle_id).gte("checked_at", since);
-    if ((count ?? 0) >= DAILY_LIMIT && !ownerKey) return json({ error: "scan_limit" }, 429);
-
     const currency = circle?.currency ?? "INR";
     const country = (circle?.country ?? "IN").toUpperCase();
 
-    // ── 1. forensic read (cached per file + page range)
+    // spend guard: if the AI allowance is used up, still run the free rules and say so
+    const g: GuardResult = ownerKey ? { ok: true, allowance: await allowance(admin, exp.circle_id) } : await guard(admin, cfg, { circleId: exp.circle_id, userId, kind: "check" });
+    if (!g.ok && !["ai_limit_reached", "ai_paused", "ai_off"].includes(g.error ?? "")) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance } }, g.status ?? 429);
+    // paid switch: env secret or admin console (Features → Bill Check only on Plus)
+    const PAID = PAID_ENV || cfg.bill_check_paid === true;
+    if (PAID && !ownerKey && circle?.plan !== "plus") return json({ error: "upgrade_required", message: "Bill Check is part of Saath Plus." }, 402);
+    const aiAllowed = g.ok;
+    const webAllowed = aiAllowed && !auto && cfg.price_web_enabled !== false && (!PAID || circle?.plan === "plus");
+
+    // ── (b) forensic read: cached (scan or earlier check) → else Haiku → Sonnet only if needed and not auto
     const flags: Flag[] = [];
-    let doc: any = null;
+    let doc: any = null, readModel: string | null = null, readReasons: string[] = [], readSource = "none";
     const receipts: any[] = exp.saath_receipts ?? [];
     const pages = pagesFromNotes(exp.notes);
     const billNo = billNoFromNotes(exp.notes);
     for (const rc of receipts.slice(0, 2)) {
       if (String(rc.mime ?? "").includes("heic")) continue;
-      const cacheKey = `${rc.path}#${pages.join(",")}`;
-      let cached = (await admin.from("saath_doc_audits").select("result").eq("path", cacheKey).maybeSingle()).data?.result;
-      if (!cached) {
-        const file = await readFile(rc.path);
-        let bytes = file.bytes, total = 1;
-        if (file.mime === "application/pdf" && pages.length) ({ bytes, total } = await pagesOf(file.bytes, pages));
-        const hint = pages.length && total > 1
-          ? `These are pages ${pages.join(", ")} of a ${total}-page file; the bill of interest${billNo ? ` is number ${billNo}` : ""}, amount about ${exp.amount}.`
-          : `The bill of interest is "${exp.title}"${billNo ? `, number ${billNo}` : ""}, amount about ${exp.amount}. If the file holds several bills, still list them all.`;
-        const { result, usage } = await audit(blockFor(file.mime, bytes), lang, hint);
-        result.file_hash = await sha256(file.bytes);
-        cached = result;
-        await admin.from("saath_doc_audits").upsert({ path: cacheKey, circle_id: exp.circle_id, model: MODEL, result, input_tokens: usage?.input_tokens, output_tokens: usage?.output_tokens });
+      const hit = await cachedRead(admin, rc.path, pages);
+      let read: any = hit?.result ?? null; readSource = read ? "cache" : "none";
+      let fileHash: string | null = read?.file_hash ?? null;
+      let bytesForEsc: Uint8Array | null = null, mimeForEsc = "";
+      const prepFile = async () => {
+        const { data: blob, error } = await admin.storage.from("saath-receipts").download(rc.path);
+        if (error || !blob) throw new Error("file_not_found");
+        bytesForEsc = new Uint8Array(await blob.arrayBuffer()); mimeForEsc = mimeOf(blob, rc.path);
+        fileHash = await sha256(bytesForEsc);
+        return await prepareFile(bytesForEsc, mimeForEsc, cfg, pages);
+      };
+      const hint = pages.length ? `The bill of interest is on page(s) ${pages.join(", ")}${billNo ? `, number ${billNo}` : ""}, amount about ${exp.amount}.`
+        : `The bill of interest is "${exp.title}"${billNo ? `, number ${billNo}` : ""}, amount about ${exp.amount}.`;
+      const ropts = { purpose: "audit" as const, currency, lang, hint, amountHint: Number(exp.amount), noEscalate: auto };
+      if (!read && aiAllowed) {
+        try {
+          const prep = await prepFile();
+          read = await readBill({ admin, fn: `${FN}:read`, userId, circleId: exp.circle_id }, KEY, prep, ropts, cfg);
+          await storeRead(admin, rc.path, pages, exp.circle_id, read, fileHash!);
+          readSource = "read";
+        } catch (e) { flags.push({ code: "read_failed", severity: "info", detail: String((e as Error).message).slice(0, 120) }); }
+      } else if (read && aiAllowed && !auto && read.version >= 2 && (read.model !== SONNET || read.verify === "amounts")) {
+        // cached Haiku read: audits of high-value / poor / inconsistent bills get a full Sonnet read (once; then cached).
+        // If the scan already had Sonnet verify the amounts, only high-value / poor copies / non-reconciling bills re-read.
+        const allowed = read.verify === "amounts" ? ["high_value", "poor_readability", "does_not_reconcile"]
+          : ["high_value", "poor_readability", "does_not_reconcile", "low_confidence", "handwritten", "indic_script"];
+        const why = escalationReasons(read, ropts, cfg).filter((r) => allowed.includes(r));
+        if (why.length) {
+          try {
+            const prep = await prepFile();
+            const strong = await readBill({ admin, fn: `${FN}:read`, userId, circleId: exp.circle_id }, KEY, prep, ropts, cfg, SONNET);
+            read = { ...strong, escalated: true, reasons: why };
+            await storeRead(admin, rc.path, pages, exp.circle_id, read, fileHash!);
+            readSource = "escalated";
+          } catch (_) { /* keep the Haiku read */ }
+        }
       }
-      // pick the document that is this bill
-      const cands: any[] = (cached.documents ?? []).filter((d: any) => d.doc_type === "bill" || (d.items ?? []).length);
+      if (!read) continue;
+      readModel = read.model ?? hit?.model ?? null; readReasons = read.reasons ?? [];
+      const cands: any[] = (read.documents ?? []).filter((d: any) => d.doc_type === "bill" || (d.items ?? []).length);
       const score = (d: any) => (billNo && String(d.bill_number ?? "").toLowerCase().includes(billNo.toLowerCase()) ? 3 : 0)
-        + (num(d.grand_total) != null && near(Number(d.grand_total), Number(exp.amount), 0.002, 1) ? 2 : 0)
+        + (num(d.grand_total ?? d.amount) != null && near(Number(d.grand_total ?? d.amount), Number(exp.amount), 0.002, 1) ? 2 : 0)
         + (pages.length && (d.pages ?? []).some((p: number) => pages.includes(p)) ? 1 : 0);
-      const best = cands.sort((a, b) => score(b) - score(a))[0] ?? (cached.documents ?? [])[0];
-      if (best && !doc) { doc = { ...best, file_hash: cached.file_hash, path: rc.path }; flags.push(...docRules(best, exp, country)); }
+      const best = cands.sort((a, b) => score(b) - score(a))[0] ?? (read.documents ?? [])[0];
+      if (best && !doc) {
+        const bd = { ...best, grand_total: best.grand_total ?? best.amount };
+        doc = { ...bd, file_hash: fileHash, path: rc.path };
+        flags.push(...docRules(bd, exp, country));
+      }
     }
     if (!receipts.length) flags.push({ code: "no_file", severity: "info" });
+    if (!aiAllowed) flags.push({ code: "ai_limit", severity: "info", detail: g.ok ? undefined : g.message });
 
-    // ── 2. rules across the circle
+    // ── (a) rules across the circle (free)
     const [{ data: others }, { data: otherChecks }] = await Promise.all([
       admin.from("saath_expenses").select("id, title, amount, spent_on, vendor, notes").eq("circle_id", exp.circle_id).neq("id", exp.id),
       admin.from("saath_bill_checks").select("expense_id, doc").eq("circle_id", exp.circle_id).neq("expense_id", exp.id),
@@ -470,22 +396,20 @@ Deno.serve(async (req) => {
       if (dupFile) flags.push({ code: "same_file_twice", severity: "high", params: { other_id: dupFile.expense_id } });
     }
 
-    // ── 3. prices: what others paid locally, then the market
+    // ── (c) prices: local medians first (free), web search only where allowed and needed
     const city = (circle?.city || doc?.vendor_city || null) as string | null;
     const vendorKind = doc?.vendor_kind ?? (exp.category === "medicine" ? "pharmacy" : exp.category === "tests" ? "lab" : exp.category === "hospital" ? "hospital" : "other");
     const lines: PriceAsk[] = (doc?.items ?? [])
       .map((it: any) => {
         const qty = num(it.qty) || 1, amt = num(it.amount) ?? 0;
         const unit_price = num(it.rate) ?? (amt ? amt / qty : 0);
-        return { key: norm(it.generic_key || it.name).slice(0, 80) + "|" + norm(it.unit || "unit"), name: it.name, unit: it.unit || "unit", unit_price: Math.round(unit_price * 100) / 100, qty, vendor_kind: vendorKind, mrp: num(it.mrp), amount: amt };
+        return { key: norm(it.generic_key || it.name).slice(0, 80) + "|" + unitKey(it.unit), name: it.name, unit: it.unit || "unit", unit_price: Math.round(unit_price * 100) / 100, qty, vendor_kind: vendorKind, mrp: num(it.mrp), amount: amt };
       })
       .filter((a: any) => a.unit_price > 0);
-    // no line items (no file, or a one-line receipt): price the service itself when its title names one
     if (!lines.length && PRICED_CATEGORIES.includes(exp.category) && exp.category !== "medicine" && Number(exp.amount) > 0) {
       const name = doc?.vendor ? `${exp.title} (${doc.vendor})` : exp.title;
       lines.push({ key: norm(exp.title).slice(0, 80) + "|bill", name, unit: "bill", unit_price: Number(exp.amount), qty: 1, vendor_kind: vendorKind, mrp: null, amount: Number(exp.amount) } as any);
     }
-
     const keys = lines.map((l) => l.key);
     const { data: stats } = keys.length ? await admin.rpc("saath_price_stats", { p_keys: keys, p_city: city, p_country: country }) : { data: [] };
     const statFor = (k: string) => (stats ?? []).find((s: any) => s.item_key === k && s.scope === "city" && s.n >= 5) ?? (stats ?? []).find((s: any) => s.item_key === k && s.scope === "country" && s.n >= 8);
@@ -497,18 +421,17 @@ Deno.serve(async (req) => {
           params: { item: l.name, billed: l.unit_price, median: Math.round(Number(s.median) * 100) / 100, n: Number(s.n), scope: s.scope } });
       }
     }
-
-    // market lookup for the most expensive lines (cached 30 days per item + city)
-    const top = [...lines].sort((a: any, b: any) => (b.amount ?? 0) - (a.amount ?? 0)).filter((l: any) => (l.amount ?? 0) >= 100).slice(0, 6);
+    const top = [...lines].sort((a: any, b: any) => (b.amount ?? 0) - (a.amount ?? 0))
+      .filter((l: any) => (l.amount ?? 0) >= Number(cfg.price_min_amount)).slice(0, Number(cfg.price_top_items));
     const refKey = (l: PriceAsk) => `${l.key}|${norm(city ?? "")}|${country}`;
     const fresh = new Date(Date.now() - 30 * 864e5).toISOString();
     const { data: refs } = top.length ? await admin.from("saath_price_refs").select("key, result").in("key", top.map(refKey)).gte("created_at", fresh) : { data: [] };
     const known = new Map((refs ?? []).map((r: any) => [r.key, r.result]));
-    const ask = top.filter((l) => !known.has(refKey(l)));
+    const ask = webAllowed ? top.filter((l) => !known.has(refKey(l)) && !statFor(l.key)) : [];
     let searches = 0;
     if (ask.length) {
       try {
-        const res = await priceCheck(ask, city, country, currency, lang, exp.spent_on);
+        const res = await priceCheck({ admin, fn: `${FN}:price`, userId, circleId: exp.circle_id }, ask, city, country, currency, lang, exp.spent_on);
         searches = res.searches;
         for (const r of res.items) {
           const l = ask.find((a) => a.key === r.key) ?? ask[res.items.indexOf(r)];
@@ -521,10 +444,9 @@ Deno.serve(async (req) => {
     for (const l of top) {
       const r: any = known.get(refKey(l));
       if (!r) continue;
-      // re-judge against this bill's own unit price (cached ranges are reused across bills)
       const hi = num(r.typical_high), ceil = num(r.ceiling_price);
       let verdict = r.verdict;
-      if (hi && l.unit_price > 0) verdict = ceil && l.unit_price > ceil * 1.02 ? "above_ceiling" : l.unit_price > hi * 2 ? "very_high" : l.unit_price > hi * 1.25 ? "high" : r.verdict === "unknown" ? "unknown" : "fair";
+      if (hi && l.unit_price > 0 && r.verdict !== "unknown") verdict = ceil && l.unit_price > ceil * 1.02 ? "above_ceiling" : l.unit_price > hi * 2 ? "very_high" : l.unit_price > hi * 1.25 ? "high" : "fair";
       benchmarks.push({ name: l.name, unit: l.unit, billed: l.unit_price, qty: l.qty, low: num(r.typical_low), high: hi, ceiling: ceil, verdict, reference: r.reference, explanation: r.explanation, sources: (r.sources ?? []).slice(0, 3) });
       if (verdict === "above_ceiling") flags.push({ code: "above_ceiling_price", severity: "high", source: "price", params: { item: l.name, billed: l.unit_price, ceiling: ceil }, detail: r.explanation });
       else if (verdict === "very_high") flags.push({ code: "price_very_high", severity: "high", source: "price", params: { item: l.name, billed: l.unit_price, low: num(r.typical_low), high: hi }, detail: r.explanation });
@@ -537,11 +459,10 @@ Deno.serve(async (req) => {
     const items = (doc?.items ?? []).slice(0, 80);
     const docSlim = doc ? { vendor: doc.vendor, vendor_kind: doc.vendor_kind, vendor_city: doc.vendor_city, gstin: doc.gstin, bill_number: doc.bill_number, date: doc.date,
       patient_name: doc.patient_name, grand_total: doc.grand_total, handwritten: doc.handwritten, file_hash: doc.file_hash, path: doc.path, readability: doc.readability } : null;
-    const row = { expense_id: exp.id, circle_id: exp.circle_id, status: "done", risk, score, flags, items, benchmarks, doc: docSlim, had_file: !!receipts.length, model: MODEL, searches, checked_by: userId, checked_at: new Date().toISOString() };
+    const row = { expense_id: exp.id, circle_id: exp.circle_id, status: "done", risk, score, flags, items, benchmarks, doc: docSlim, had_file: !!receipts.length, model: readModel, searches, checked_by: userId, checked_at: new Date().toISOString() };
     const { data: prev } = await admin.from("saath_bill_checks").select("dismissed").eq("expense_id", exp.id).maybeSingle();
     await admin.from("saath_bill_checks").upsert({ ...row, dismissed: prev?.dismissed ?? [] });
 
-    // anonymous price observations feed the local medians (no user, no circle stored)
     if (doc && lines.length) {
       const h = await sha256(`${doc.file_hash ?? doc.path}#${doc.bill_number ?? ""}`);
       const obs = lines.filter((l: any) => l.unit !== "bill").map((l: any) => ({
@@ -550,10 +471,14 @@ Deno.serve(async (req) => {
       }));
       if (obs.length) await admin.from("saath_price_obs").upsert(obs, { onConflict: "source_path_hash,item_key,unit_price", ignoreDuplicates: true });
     }
-    return json({ ok: true, ...row, dismissed: prev?.dismissed ?? [] });
+    afterCalls(admin, cfg);
+    const a = await allowance(admin, exp.circle_id);
+    return json({ ok: true, ...row, dismissed: prev?.dismissed ?? [],
+      ai: { read_model: readModel, read_source: readSource, read_reasons: readReasons, web_search: ask.length > 0, searches, auto, allowance: a,
+        limit_reached: !aiAllowed, message: g.ok ? undefined : g.message } });
   } catch (err) {
     const msg = String((err as Error)?.message ?? err);
-    const code = ["file_not_found", "file_too_large"].includes(msg) ? msg : "check_failed";
+    const code = ["file_not_found", "file_too_large", "too_many_pages"].includes(msg) ? msg : "check_failed";
     return json({ error: code, detail: msg.slice(0, 300) }, code === "check_failed" ? 500 : 400);
   }
 });

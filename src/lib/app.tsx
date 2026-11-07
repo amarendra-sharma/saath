@@ -5,6 +5,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useS
 import { Alert, Platform } from "react-native";
 import { STRINGS, LangCode, LANGS } from "./strings";
 import { supabase } from "./supabase";
+import { appFlags, isAdmin as fetchIsAdmin } from "./admin";
+import { setBillCheckPaid } from "./billcheck";
 
 export type Profile = {
   id: string; full_name: string; email: string | null; phone: string | null; language: string;
@@ -19,6 +21,10 @@ type Ctx = {
   setLang: (l: LangCode) => Promise<void>;
   t: (key: string, params?: Record<string, string | number>) => string;
   refreshProfile: () => Promise<void>;
+  /** app owner / admin (admin console) */
+  isAdmin: boolean;
+  /** feature switches set in the admin console */
+  flags: Record<string, any>;
 };
 
 const AppCtx = createContext<Ctx>(null as any);
@@ -40,10 +46,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [lang, setLangState] = useState<LangCode>("en");
+  const [admin, setAdmin] = useState(false);
+  const [flags, setFlags] = useState<Record<string, any>>({});
 
   const refreshProfile = useCallback(async () => {
     const { data: s } = await supabase.auth.getSession();
-    if (!s.session) { setProfile(null); return; }
+    if (!s.session) { setProfile(null); setAdmin(false); return; }
+    const [a, f] = await Promise.all([fetchIsAdmin(), appFlags()]);
+    setAdmin(a === true); setFlags(f ?? {}); setBillCheckPaid(f?.bill_check_paid === true);
     const { data, error } = await supabase.rpc("saath_ensure_profile");
     if (!error && data) {
       setProfile(data as Profile);
@@ -66,7 +76,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     })();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
       setSession(s);
-      if (!s) setProfile(null);
+      if (!s) { setProfile(null); setAdmin(false); }
     });
     return () => sub.subscription.unsubscribe();
   }, [refreshProfile]);
@@ -83,7 +93,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const t = useCallback((key: string, params?: Record<string, string | number>) => translate(lang, key, params), [lang]);
 
-  const value = useMemo(() => ({ ready, session, profile, lang, setLang, t, refreshProfile }), [ready, session, profile, lang, setLang, t, refreshProfile]);
+  const value = useMemo(() => ({ ready, session, profile, lang, setLang, t, refreshProfile, isAdmin: admin, flags }),
+    [ready, session, profile, lang, setLang, t, refreshProfile, admin, flags]);
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
 

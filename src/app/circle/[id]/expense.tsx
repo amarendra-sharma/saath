@@ -138,7 +138,7 @@ export default function ExpenseForm() {
         if (error) throw error;
       }
       // Bill Check runs in the background; its result appears on the bill
-      if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan) && (scanned || files.length) && expenseId) runCheck(expenseId, lang).catch(() => {});
+      if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan) && (scanned || files.length) && expenseId) runCheck(expenseId, lang, true).catch(() => {});
       router.back();
     } catch (e) { notify(t("something_wrong"), errText(e)); }
     finally { setBusy(false); }

@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Image, Pressable, ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, Field, Icon } from "../components/ui";
 import { notify, useApp } from "../lib/app";
@@ -59,8 +59,8 @@ export default function Welcome() {
     <ScrollView style={{ flex: 1, backgroundColor: C.primary }} contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
       <View style={{ paddingTop: ins.top + S.xl, paddingHorizontal: S.xl, paddingBottom: S.xl, gap: S.md }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
-          <View style={{ width: 56, height: 56, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" }}>
-            <Icon name="people" size={30} color={C.white} />
+          <View style={{ width: 56, height: 56, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.10)", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+            <Image source={require("../../assets/adaptive-icon.png")} style={{ width: 104, height: 104 }} accessibilityIgnoresInvertColors />
           </View>
           <View>
             <Text style={[T.hero, { color: C.white }]}>{t("app_name")}</Text>
@@ -72,7 +72,7 @@ export default function Welcome() {
           <View style={{ gap: 10, marginTop: S.sm }}>
             {[["receipt-outline", "feat_receipts"], ["pie-chart-outline", "feat_split"], ["notifications-outline", "feat_remind"], ["globe-outline", "feat_pay"]].map(([ic, k]) => (
               <View key={k} style={{ flexDirection: "row", gap: S.md, alignItems: "center" }}>
-                <Icon name={ic} size={22} color={C.accentSoft} />
+                <Icon name={ic} size={22} color={C.gold} />
                 <Text style={[T.body, { color: C.white, flex: 1 }]}>{t(k)}</Text>
               </View>
             ))}

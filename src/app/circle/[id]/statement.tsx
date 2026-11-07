@@ -58,10 +58,10 @@ export default function Statement() {
     try {
       const rows = (cols: string[]) => `<tr>${cols.map((c) => `<td>${c}</td>`).join("")}</tr>`;
       const html = `<!doctype html><html><head><meta charset="utf-8"><style>
-        body{font-family:-apple-system,"Noto Sans","Noto Sans Devanagari","Noto Sans Bengali",Arial,sans-serif;color:#1C2624;padding:28px;font-size:12px}
-        h1{color:#0E6B5C;margin:0 0 4px;font-size:22px} h2{font-size:15px;margin:22px 0 8px;color:#0A5246}
-        table{width:100%;border-collapse:collapse} th,td{padding:6px 8px;border-bottom:1px solid #E4DFD3;text-align:left} th{background:#F6F3EC;font-size:11px;text-transform:uppercase}
-        td.n,th.n{text-align:right} .muted{color:#7C8784} .tot td{font-weight:700;border-top:2px solid #1C2624}
+        body{font-family:-apple-system,"Noto Sans","Noto Sans Devanagari","Noto Sans Bengali",Arial,sans-serif;color:#0E1A2B;padding:28px;font-size:12px}
+        h1{color:#1A3A6E;margin:0 0 4px;font-size:22px} h2{font-size:15px;margin:22px 0 8px;color:#112850}
+        table{width:100%;border-collapse:collapse} th,td{padding:6px 8px;border-bottom:1px solid #E2E7EF;text-align:left} th{background:#F4F6FA;font-size:11px;text-transform:uppercase}
+        td.n,th.n{text-align:right} .muted{color:#63708A} .tot td{font-weight:700;border-top:2px solid #0E1A2B}
       </style></head><body>
       <h1>${esc(d.circle.name)}</h1>
       <div class="muted">${esc(t("statement"))} · ${esc(dateLabel(d.from, lang, true))} – ${esc(dateLabel(d.to, lang, true))} · ${esc(cur)}</div>

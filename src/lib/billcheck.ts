@@ -14,17 +14,24 @@ export type BillCheck = {
   flags: CheckFlag[]; items: CheckItem[]; benchmarks: Benchmark[]; dismissed: string[]; had_file: boolean;
   doc: { vendor?: string; gstin?: string; bill_number?: string; patient_name?: string; handwritten?: boolean } | null;
   checked_at: string;
+  ai?: { read_model?: string | null; web_search?: boolean; auto?: boolean; limit_reached?: boolean; message?: string;
+    allowance?: { cap_usd: number; spent_usd: number; remaining_usd: number } };
 };
 
-/** Paid-tier switch. Flip to true (and set the server secret SAATH_BILL_CHECK_PAID=true) when Bill Check becomes a paid feature. */
-export const BILL_CHECK_PAID = false;
+/** Server codes that mean "AI is unavailable for now" (limits), not "something broke". */
+export const AI_LIMIT_CODES = ["ai_limit_reached", "ai_paused", "too_many_requests", "scan_limit", "upgrade_required", "scan_off", "ai_off"];
+
+/** Paid-tier switch: set in the admin console (Settings → Features → "Bill Check only on Plus"); loaded at sign-in. */
+let BILL_CHECK_PAID = false;
+export const setBillCheckPaid = (v: boolean) => { BILL_CHECK_PAID = v; };
 export const billCheckAllowed = (plan: string | undefined) => !BILL_CHECK_PAID || plan === "plus";
 
 export const SEV_ORDER: Record<Severity, number> = { high: 0, medium: 1, low: 2, info: 3 };
 export const flagKey = (f: CheckFlag) => f.code + (f.params?.item ? ":" + f.params.item : "") + (f.params?.other_id ? ":" + f.params.other_id : "");
 
-export async function runCheck(expenseId: string, lang: string): Promise<BillCheck> {
-  return callFn<BillCheck>("saath-check", { expense_id: expenseId, language: lang }, true);
+/** auto = the check that runs by itself after a bill is added: rules + the cheap read only, never web search. */
+export async function runCheck(expenseId: string, lang: string, auto = false): Promise<BillCheck> {
+  return callFn<BillCheck>("saath-check", { expense_id: expenseId, language: lang, auto }, true);
 }
 export async function loadCheck(expenseId: string): Promise<BillCheck | null> {
   const { data } = await supabase.from("saath_bill_checks").select("*").eq("expense_id", expenseId).maybeSingle();
