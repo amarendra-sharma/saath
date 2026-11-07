@@ -1,17 +1,18 @@
 // App admin console (owner only). English-only on purpose: it is a tool for the people who run Saath.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { RefreshControl, ScrollView, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { Avatar, Banner, Button, Card, Chips, Empty, Field, Icon, Loading, Pill, Row, Screen, Section, Segmented, Sheet, Toggle, hashTone } from "../components/ui";
 import {
-  AdminCircle, AdminOverview, AdminUser, ConfigRow, adminCircles, adminConfig, adminOverview, adminSetAdmin, adminSetConfig,
+  AdminCircle, AdminOverview, AdminRequest, AdminUser, ConfigRow, PERIOD_MONTHS, PriceRow, adminCircles, adminConfig, adminDeclineRequest,
+  adminGrantPlus, adminOverview, adminPricing, adminRequests, adminSetAdmin, adminSetAi, adminSetConfig, adminSetPrice,
   adminUpdateCircle, adminUsers, usd,
 } from "../lib/admin";
 import { confirm, notify, useApp } from "../lib/app";
-import { money } from "../lib/format";
+import { dateLabel, money } from "../lib/format";
 import { errText } from "../lib/supabase";
 import { C, R, S, T } from "../lib/theme";
 
-type Tab = "overview" | "circles" | "people" | "settings";
+type Tab = "overview" | "circles" | "plans" | "people" | "settings";
 
 export default function Admin() {
   const { isAdmin, session } = useApp();
@@ -28,11 +29,12 @@ export default function Admin() {
     <Screen title="Admin console" subtitle="Saath · run the app" scroll={false} padded={false}>
       <View style={{ paddingHorizontal: S.lg, paddingBottom: S.sm }}>
         <Segmented value={tab} onChange={setTab} options={[
-          { value: "overview", label: "Overview" }, { value: "circles", label: "Circles" },
+          { value: "overview", label: "Home" }, { value: "circles", label: "Circles" }, { value: "plans", label: "Plans" },
           { value: "people", label: "People" }, { value: "settings", label: "Settings" },
         ]} />
       </View>
-      {tab === "overview" ? <OverviewTab /> : tab === "circles" ? <CirclesTab /> : tab === "people" ? <PeopleTab /> : <SettingsTab />}
+      {tab === "overview" ? <OverviewTab goTab={setTab} /> : tab === "circles" ? <CirclesTab /> : tab === "plans" ? <PlansTab goTab={setTab} />
+        : tab === "people" ? <PeopleTab /> : <SettingsTab />}
     </Screen>
   );
 }
@@ -73,20 +75,26 @@ function Stat({ label, value, sub, icon }: { label: string; value: string; sub?:
   );
 }
 
-function OverviewTab() {
+function OverviewTab({ goTab }: { goTab: (t: Tab) => void }) {
   const fn = useCallback(async () => {
-    const [o, cfg] = await Promise.all([adminOverview(), adminConfig()]);
-    return { o, cfg: Object.fromEntries(cfg.map((r) => [r.key, r.value])) as Record<string, any> };
+    const [o, cfg, req, circles] = await Promise.all([adminOverview(), adminConfig(), adminRequests().catch(() => [] as AdminRequest[]), adminCircles().catch(() => [] as AdminCircle[])]);
+    return { o, req, circles, cfg: Object.fromEntries(cfg.map((r) => [r.key, r.value])) as Record<string, any> };
   }, []);
   const { data, err, loading, reload } = useAdmin(fn);
   if (!data) return err ? <View style={{ padding: S.lg }}><Banner tone="owe" text={err} /></View> : <Loading />;
-  const { o, cfg } = data;
+  const { o, cfg, req, circles } = data;
+  const plusCount = circles.filter((c) => c.plus_active).length;
   const cap = Number(cfg.daily_cap_usd ?? 5);
   const max = Math.max(0.01, ...o.daily.map((d) => Number(d.usd)));
   const credit = /credit balance is too low/i.test(o.last_ai_error ?? "");
   return (
     <Body loading={loading} onRefresh={reload}>
       {credit ? <Banner tone="owe" icon="card-outline" text="Anthropic credit has run out, so bill reading is failing. Add credit at console.anthropic.com → Billing." /> : null}
+      {req.length ? (
+        <Pressable onPress={() => goTab("plans")}>
+          <Banner tone="primary" icon="sparkles-outline" text={`${req.length} circle${req.length > 1 ? "s" : ""} asked for Saath Plus. Open Plans to grant or decline.`} />
+        </Pressable>
+      ) : null}
       {cfg.scan_enabled === false ? <Banner tone="pending" icon="pause-circle-outline" text="Bill reading is switched off (Settings → Features)." /> : null}
 
       <Section title="AI spend">
@@ -124,6 +132,8 @@ function OverviewTab() {
         <Stat icon="albums-outline" label="Circles" value={String(o.circles)} sub={o.circles_all !== o.circles ? `${o.circles_all} incl. archived` : undefined} />
         <Stat icon="receipt-outline" label="Bills" value={String(o.expenses)} />
         <Stat icon="scan-outline" label="Scans · 30d" value={String(o.scans_30d)} sub={`${o.checks_30d} bill checks`} />
+        <Stat icon="sparkles-outline" label="Plus circles" value={String(plusCount)} sub={cfg.ai_paid_enabled ? "Charging for AI: on" : "Charging for AI: off (AI free for all)"} />
+        <Stat icon="hourglass-outline" label="Plus requests" value={String(req.length)} sub="waiting for you" />
       </View>
 
       <Section title="Spend by feature · 30 days">
@@ -165,7 +175,9 @@ function CirclesTab() {
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
               <Text style={[T.h3, { color: C.ink, flex: 1 }]} numberOfLines={1}>{c.name}</Text>
               {c.status !== "active" ? <Pill text="Archived" /> : null}
-              <Pill text={c.plan === "plus" ? "Plus" : "Free"} tone={c.plan === "plus" ? "primary" : "neutral"} />
+              {c.wants_plus ? <Pill text="Wants Plus" tone="pending" /> : null}
+              {c.ai_override !== "auto" ? <Pill text={`AI ${c.ai_override}`} tone={c.ai_override === "off" ? "owe" : "ok"} /> : null}
+              <Pill text={c.plus_active ? "Plus" : "Free"} tone={c.plus_active ? "primary" : "neutral"} />
             </View>
             <Text style={[T.small, { color: C.ink3 }]}>
               {c.owner ?? "—"} · {c.members} members · {c.expenses} bills · {money(Number(c.expense_total), c.currency, lang)}{c.city ? ` · ${c.city}` : ""}
@@ -174,7 +186,8 @@ function CirclesTab() {
               <View style={{ height: 6, borderRadius: 3, backgroundColor: C.bg, overflow: "hidden" }}>
                 <View style={{ width: `${pct}%`, height: 6, backgroundColor: pct >= 100 ? C.owe : pct > 75 ? C.pending : C.primary }} />
               </View>
-              <Text style={[T.tiny, { color: C.ink3 }]}>AI this month {usd(c.spent_usd)} of {usd(c.cap_usd)} · auto Bill Check {c.bill_check_auto ? "on" : "off"}</Text>
+              <Text style={[T.tiny, { color: C.ink3 }]}>AI this month {usd(c.spent_usd)} of {usd(c.cap_usd)} · auto Bill Check {c.bill_check_auto ? "on" : "off"}
+                {c.plus_active && c.plus_until ? ` · Plus until ${dateLabel(c.plus_until, lang, true)}` : ""}{!c.plus_active ? ` · trial reads used ${c.ai_trial_used}` : ""}</Text>
             </View>
           </Card>
         );
@@ -185,26 +198,57 @@ function CirclesTab() {
 }
 
 function CircleSheet({ circle, onClose, onSaved }: { circle: AdminCircle | null; onClose: () => void; onSaved: () => void }) {
+  const { lang } = useApp();
+  const [ai, setAi] = useState<"auto" | "on" | "off">("auto");
   const [plan, setPlan] = useState("free");
   const [cap, setCap] = useState("2");
   const [auto, setAuto] = useState(true);
   const [status, setStatus] = useState("active");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
-    if (circle) { setPlan(circle.plan); setCap(String(circle.cap_usd)); setAuto(circle.bill_check_auto); setStatus(circle.status); }
+    if (circle) { setAi(circle.ai_override ?? "auto"); setPlan(circle.plan); setCap(String(circle.cap_usd)); setAuto(circle.bill_check_auto); setStatus(circle.status); }
   }, [circle]);
   const save = async () => {
     if (!circle) return;
     const n = Number(cap);
     if (!isFinite(n) || n < 0 || n > 100) { notify("Monthly AI allowance must be between $0 and $100."); return; }
     setBusy(true);
-    try { await adminUpdateCircle(circle.id, { plan, cap_usd: n, bill_check_auto: auto, status }); onSaved(); }
+    try {
+      await adminUpdateCircle(circle.id, { plan, cap_usd: n, bill_check_auto: auto, status });
+      if (ai !== circle.ai_override) await adminSetAi(circle.id, ai);
+      onSaved();
+    }
     catch (e) { notify("Couldn't save", errText(e)); } finally { setBusy(false); }
+  };
+  const grant = async (months: number) => {
+    if (!circle) return;
+    const q = months > 0 ? `Give "${circle.name}" Saath Plus for ${months} month${months > 1 ? "s" : ""}?` : `Remove Saath Plus from "${circle.name}"?`;
+    if (!(await confirm(months > 0 ? "Grant Plus" : "Revoke Plus", q + (months > 0 ? " Time is added to any Plus it already has, and its AI allowance is raised to its region's Plus allowance." : ""), months > 0 ? "Grant" : "Revoke", "Cancel", months <= 0))) return;
+    setBusy(true);
+    try { await adminGrantPlus(circle.id, months, "admin console"); onSaved(); }
+    catch (e) { notify("Couldn't change Plus", errText(e)); } finally { setBusy(false); }
   };
   return (
     <Sheet visible={!!circle} onClose={onClose} title={circle?.name ?? ""}>
-      <Section title="Plan">
+      <Section title="AI features for this circle">
+        <Chips value={ai} onChange={setAi} options={[{ value: "auto", label: "Auto (by plan)" }, { value: "on", label: "Always on" }, { value: "off", label: "Off" }]} />
+        <Text style={[T.tiny, { color: C.ink3 }]}>Off wins over everything, including Plus. Always on gives AI for free (e.g. your own family). Auto follows the plan and the free trial.</Text>
+      </Section>
+      <Section title="Saath Plus">
+        <Text style={[T.small, { color: C.ink2 }]}>
+          {circle?.plus_active ? `Active${circle.plus_until ? ` until ${dateLabel(circle.plus_until, lang, true)}` : ""}${circle.plus_source ? ` · ${circle.plus_source}` : ""}` : `Not active · ${circle?.ai_trial_used ?? 0} trial reads used`}
+          {circle?.wants_plus ? " · asked for Plus" : ""}
+        </Text>
+        <View style={{ flexDirection: "row", gap: S.sm, flexWrap: "wrap" }}>
+          <Button small icon="add" label="1 month" onPress={() => grant(1)} />
+          <Button small icon="add" label="3 months" kind="secondary" onPress={() => grant(3)} />
+          <Button small icon="add" label="12 months" kind="secondary" onPress={() => grant(12)} />
+          {circle?.plus_active ? <Button small kind="danger" label="Revoke" onPress={() => grant(0)} /> : null}
+        </View>
+      </Section>
+      <Section title="Plan (manual)">
         <Chips value={plan} onChange={setPlan} options={[{ value: "free", label: "Free" }, { value: "plus", label: "Plus" }]} />
+        <Text style={[T.tiny, { color: C.ink3 }]}>Prefer the buttons above: they set an end date and the allowance. Plus set here has no end date.</Text>
       </Section>
       <Field label="Monthly AI allowance (USD)" value={cap} onChangeText={setCap} keyboardType="decimal-pad"
         hint={circle ? `Used ${usd(circle.spent_usd)} this month. When it runs out, bills are entered by hand and free checks still run.` : undefined} />
@@ -213,6 +257,112 @@ function CircleSheet({ circle, onClose, onSaved }: { circle: AdminCircle | null;
         <Chips value={status} onChange={setStatus} options={[{ value: "active", label: "Active" }, { value: "archived", label: "Archived" }]} />
       </Section>
       <Button label="Save" icon="checkmark" loading={busy} onPress={save} />
+    </Sheet>
+  );
+}
+
+// ───────────────────────── Plans: Plus requests + regional prices
+function PlansTab({ goTab }: { goTab: (t: Tab) => void }) {
+  const fn = useCallback(async () => {
+    const [req, prices, cfg] = await Promise.all([adminRequests(), adminPricing(), adminConfig()]);
+    return { req, prices, cfg: Object.fromEntries(cfg.map((r) => [r.key, r.value])) as Record<string, any> };
+  }, []);
+  const { data, err, loading, reload } = useAdmin(fn);
+  const [edit, setEdit] = useState<PriceRow | null>(null);
+  const [q, setQ] = useState("");
+  if (!data) return err ? <View style={{ padding: S.lg }}><Banner tone="owe" text={err} /></View> : <Loading />;
+  const { req, prices, cfg } = data;
+  const grant = async (r: AdminRequest) => {
+    const m = PERIOD_MONTHS[r.period] ?? 1;
+    if (!(await confirm("Grant Plus", `Give "${r.circle}" Saath Plus for ${m} month${m > 1 ? "s" : ""}? Do this after they have paid you.`, "Grant", "Cancel"))) return;
+    try { await adminGrantPlus(r.circle_id, m, `request ${r.period} ${r.price_text ?? ""}`.trim()); reload(); } catch (e) { notify("Couldn't grant", errText(e)); }
+  };
+  const decline = async (r: AdminRequest) => {
+    if (!(await confirm("Decline request?", `"${r.circle}" stays on the free plan.`, "Decline", "Cancel", true))) return;
+    try { await adminDeclineRequest(r.id); reload(); } catch (e) { notify("Couldn't decline", errText(e)); }
+  };
+  const list = prices.filter((p) => !q || p.country.toLowerCase().includes(q.toLowerCase()) || p.currency.toLowerCase().includes(q.toLowerCase()));
+  const tiers = ["A", "B", "C", "D"];
+  return (
+    <Body loading={loading} onRefresh={reload}>
+      <Pressable onPress={() => goTab("settings")}>
+        <Banner tone={cfg.ai_paid_enabled ? "ok" : "pending"} icon={cfg.ai_paid_enabled ? "card-outline" : "gift-outline"}
+          text={cfg.ai_paid_enabled ? `Charging for AI is on. Free circles get ${cfg.free_ai_trial_scans ?? 10} trial reads.`
+            : "Charging for AI is off, so every circle has AI for free. Switch it on in Settings → Features when you're ready."} />
+      </Pressable>
+
+      <Section title={`Plus requests (${req.length})`}>
+        <Card style={{ gap: 0, paddingVertical: S.sm }}>
+          {req.length ? req.map((r, i) => (
+            <View key={r.id} style={[{ paddingVertical: S.md, gap: S.sm }, i < req.length - 1 && { borderBottomWidth: 1, borderBottomColor: C.line }]}>
+              <Text style={[T.body, { color: C.ink, fontWeight: "700" }]}>{r.circle}</Text>
+              <Text style={[T.small, { color: C.ink3 }]}>{[r.price_text, r.by, r.email, r.country, new Date(r.created_at).toLocaleDateString()].filter(Boolean).join(" · ")}</Text>
+              <View style={{ flexDirection: "row", gap: S.sm }}>
+                <Button small icon="checkmark" label={`Grant ${PERIOD_MONTHS[r.period] ?? 1} mo`} onPress={() => grant(r)} />
+                <Button small kind="ghost" label="Decline" onPress={() => decline(r)} />
+              </View>
+            </View>
+          )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No open requests. When someone taps "Request Saath Plus" in a circle, it shows here. Until a payment provider is connected, collect payment yourself and then grant.</Text>}
+        </Card>
+      </Section>
+
+      <Section title="Regional prices (per circle)">
+        <Text style={[T.tiny, { color: C.ink3 }]}>Tier A rich markets · B middle income · C India and similar · D lowest income. "*" is the price everywhere else. Allowance = fair-use AI spend per month for a Plus circle.</Text>
+        <Field label="Find a country or currency" value={q} onChangeText={setQ} placeholder="IN, US, EUR…" autoCapitalize="characters" />
+        {tiers.map((tier) => {
+          const rows = list.filter((p) => p.tier === tier);
+          if (!rows.length) return null;
+          return (
+            <Card key={tier} style={{ gap: 0, paddingVertical: S.sm }}>
+              <Text style={[T.small, { color: C.ink2, fontWeight: "800", paddingBottom: 4 }]}>Tier {tier} · {rows.length}</Text>
+              {rows.map((p, i) => (
+                <Row key={p.country} last={i === rows.length - 1} onPress={() => setEdit({ ...p })}
+                  title={`${p.country === "*" ? "* everywhere else" : p.country} · ${p.currency}`}
+                  subtitle={`${p.monthly} / month · ${p.yearly} / year · ${p.pass90} / 90 days`}
+                  right={<Text style={[T.tiny, { color: C.ink3 }]}>{usd(p.ai_allowance_usd)} AI</Text>} />
+              ))}
+            </Card>
+          );
+        })}
+        <Button kind="secondary" icon="add" label="Add a country" onPress={() => setEdit({ country: "", tier: "B", currency: "USD", monthly: 2.49, yearly: 17.99, pass90: 5.99, ai_allowance_usd: 3 })} />
+      </Section>
+      <PriceSheet row={edit} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); reload(); }} />
+    </Body>
+  );
+}
+
+function PriceSheet({ row, onClose, onSaved }: { row: PriceRow | null; onClose: () => void; onSaved: () => void }) {
+  const [f, setF] = useState<Record<string, string>>({});
+  const [busy, setBusy] = useState(false);
+  useEffect(() => { if (row) setF(Object.fromEntries(Object.entries(row).map(([k, v]) => [k, String(v ?? "")]))); }, [row]);
+  const set = (k: string, v: string) => setF({ ...f, [k]: v });
+  const save = async () => {
+    const r: PriceRow = { country: (f.country || "").trim().toUpperCase(), tier: (f.tier || "B").toUpperCase(), currency: (f.currency || "").trim().toUpperCase(),
+      monthly: Number(f.monthly), yearly: Number(f.yearly), pass90: Number(f.pass90), ai_allowance_usd: Number(f.ai_allowance_usd) };
+    if (!/^([A-Z]{2}|\*)$/.test(r.country) || !/^[A-Z]{3}$/.test(r.currency)) { notify("Use a 2-letter country code (or *) and a 3-letter currency code."); return; }
+    if ([r.monthly, r.yearly, r.pass90, r.ai_allowance_usd].some((n) => !isFinite(n) || n < 0)) { notify("Prices must be numbers of 0 or more."); return; }
+    setBusy(true);
+    try { await adminSetPrice(r); onSaved(); } catch (e) { notify("Couldn't save", errText(e)); } finally { setBusy(false); }
+  };
+  return (
+    <Sheet visible={!!row} onClose={onClose} title={row?.country ? `Price · ${row.country}` : "New country price"}>
+      <View style={{ flexDirection: "row", gap: S.md }}>
+        <View style={{ flex: 1 }}><Field label="Country" value={f.country ?? ""} onChangeText={(v) => set("country", v)} autoCapitalize="characters" maxLength={2} editable={!row?.country} /></View>
+        <View style={{ flex: 1 }}><Field label="Currency" value={f.currency ?? ""} onChangeText={(v) => set("currency", v)} autoCapitalize="characters" maxLength={3} /></View>
+      </View>
+      <Section title="Tier">
+        <Chips value={(f.tier as any) ?? "B"} onChange={(v) => set("tier", v)} options={["A", "B", "C", "D"].map((x) => ({ value: x, label: x }))} />
+      </Section>
+      <View style={{ flexDirection: "row", gap: S.md }}>
+        <View style={{ flex: 1 }}><Field label="Monthly" value={f.monthly ?? ""} onChangeText={(v) => set("monthly", v)} keyboardType="decimal-pad" /></View>
+        <View style={{ flex: 1 }}><Field label="Yearly" value={f.yearly ?? ""} onChangeText={(v) => set("yearly", v)} keyboardType="decimal-pad" /></View>
+      </View>
+      <View style={{ flexDirection: "row", gap: S.md }}>
+        <View style={{ flex: 1 }}><Field label="90-day pass" value={f.pass90 ?? ""} onChangeText={(v) => set("pass90", v)} keyboardType="decimal-pad" /></View>
+        <View style={{ flex: 1 }}><Field label="AI allowance (USD/mo)" value={f.ai_allowance_usd ?? ""} onChangeText={(v) => set("ai_allowance_usd", v)} keyboardType="decimal-pad" /></View>
+      </View>
+      <Text style={[T.tiny, { color: C.ink3 }]}>New prices show to people right away. Circles already on Plus keep what they have.</Text>
+      <Button label="Save price" icon="checkmark" loading={busy} onPress={save} />
     </Sheet>
   );
 }
@@ -252,7 +402,8 @@ const META: Record<string, Meta> = {
   scan_enabled:          { group: "features", kind: "bool", label: "AI bill reading", hint: "Off: people type bills in by hand" },
   bill_check_ai_enabled: { group: "features", kind: "bool", label: "AI in Bill Check", hint: "Off: only the free rule checks run" },
   price_web_enabled:     { group: "features", kind: "bool", label: "Web price search", hint: "Compares top items with online prices (costs more)" },
-  bill_check_paid:       { group: "features", kind: "bool", label: "Bill Check only on Plus", hint: "Free circles won't see Bill Check" },
+  ai_paid_enabled:       { group: "features", kind: "bool", label: "Charge for AI (Saath Plus)", hint: "Off: AI is free for every circle. On: circles without Plus get the free trial, then manual entry" },
+  free_ai_trial_scans:   { group: "limits", kind: "number", label: "Free AI reads per circle (trial)", hint: "Used only when charging for AI is on" },
   daily_cap_usd:         { group: "limits", kind: "number", label: "Daily AI cap, whole app (USD)" },
   scan_per_user_day:     { group: "limits", kind: "number", label: "Scans per person per day" },
   checks_per_circle_day: { group: "limits", kind: "number", label: "Bill checks per circle per day" },
@@ -291,13 +442,15 @@ function SettingsTab() {
         notify(`"${META[r.key]?.label ?? r.key}" must be a number`); return;
       }
     }
+    const paidOn = changed.find((r) => r.key === "ai_paid_enabled" && draft[r.key] === true);
+    if (paidOn && !(await confirm("Start charging for AI?", "Circles without Saath Plus will get the free trial reads, then must enter bills by hand. Give your own circles Plus or set their AI to \"Always on\" first (Circles tab).", "Start charging", "Cancel"))) return;
     setBusy(true);
     try {
       for (const r of changed) await adminSetConfig(r.key, typeof r.value === "number" ? Number(draft[r.key]) : draft[r.key]);
       await reload(); notify("Saved", "Changes apply to the next bill read or check.");
     } catch (e) { notify("Couldn't save", errText(e)); } finally { setBusy(false); }
   };
-  const known = new Set(Object.keys(META));
+  const known = new Set([...Object.keys(META), "bill_check_paid", "effort_haiku", "effort_sonnet"]);
   return (
     <View style={{ flex: 1 }}>
       <Body loading={loading} onRefresh={reload}>

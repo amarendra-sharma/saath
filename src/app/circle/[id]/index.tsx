@@ -13,6 +13,7 @@ import { copy, openWhatsApp, shareText } from "../../../lib/share";
 import { methodDef } from "../../../lib/payments";
 import { callFn, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
+import { AiAccess, aiStatus } from "../../../lib/plus";
 import { AI_LIMIT_CODES, billCheckAllowed, loadCircleChecks, openFlags, openRisk, runCheck } from "../../../lib/billcheck";
 
 type Tab = "overview" | "expenses" | "payments" | "people";
@@ -40,7 +41,8 @@ export default function CircleScreen() {
     if (error) throw error; return data as Activity[];
   }, [id]);
 
-  const reloadAll = () => { sum.reload(); exp.reload(); pay.reload(); act.reload(); };
+  const access = useLoad<AiAccess | null>(() => aiStatus(id), [id]);
+  const reloadAll = () => { sum.reload(); exp.reload(); pay.reload(); act.reload(); access.reload(); };
   const s = sum.data;
   if (!s) return sum.error ? <Empty icon="alert-circle-outline" title={t("something_wrong")} text={sum.error} action={<Button label={t("go_home")} onPress={() => router.replace("/home")} />} /> : <Loading />;
 
@@ -84,7 +86,7 @@ export default function CircleScreen() {
 
       <ScrollView contentContainerStyle={{ padding: S.lg, paddingTop: S.sm, gap: S.lg, paddingBottom: ins.bottom + 120 }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={reloadAll} tintColor={C.primary} />}>
-        {tab === "overview" && <Overview x={x} s={s} acts={act.data ?? []} myBal={myBal} showWelcome={showWelcome} closeWelcome={() => setShowWelcome(false)} goTab={setTab} pendingCount={pendingCount} />}
+        {tab === "overview" && <Overview x={x} s={s} access={access.data} acts={act.data ?? []} myBal={myBal} showWelcome={showWelcome} closeWelcome={() => setShowWelcome(false)} goTab={setTab} pendingCount={pendingCount} />}
         {tab === "expenses" && <Expenses x={x} s={s} items={exp.data} />}
         {tab === "payments" && <Payments x={x} s={s} items={pay.data} onChanged={reloadAll} />}
         {tab === "people" && <People x={x} s={s} onChanged={reloadAll} />}
@@ -102,8 +104,8 @@ export default function CircleScreen() {
 type Ctx = { t: (k: string, p?: Record<string, string | number>) => string; lang: string; id: string; cur: string; c: Summary["circle"]; admin: boolean; me: Summary["members"][number] | undefined };
 
 // ---------------------------------------------------------------- Overview
-function Overview({ x, s, acts, myBal, showWelcome, closeWelcome, goTab, pendingCount }: {
-  x: Ctx; s: Summary; acts: Activity[]; myBal: number; showWelcome: boolean; closeWelcome: () => void; goTab: (t: Tab) => void; pendingCount: number;
+function Overview({ x, s, access, acts, myBal, showWelcome, closeWelcome, goTab, pendingCount }: {
+  x: Ctx; s: Summary; access: AiAccess | null; acts: Activity[]; myBal: number; showWelcome: boolean; closeWelcome: () => void; goTab: (t: Tab) => void; pendingCount: number;
 }) {
   const { t, lang, id, cur, c, admin, me } = x;
   const cats = s.categories.slice(0, 6);
@@ -133,6 +135,14 @@ function Overview({ x, s, acts, myBal, showWelcome, closeWelcome, goTab, pending
         </Text>
         {me ? <Text style={[T.tiny, { color: C.ink3 }]}>{t("your_share_pct", { pct: Number(me.share).toFixed(Number(me.share) % 1 ? 1 : 0) })} · {t("charged_paid", { charged: money(me.charged, cur, lang), paid: money(me.credited, cur, lang) })}</Text> : null}
       </Card>
+
+      <View style={{ flexDirection: "row", gap: S.sm }}>
+        <Tool icon="bar-chart-outline" label={t("ins_title")} sub={t("tool_insights_sub")} onPress={() => router.push({ pathname: "/circle/[id]/insights", params: { id } })} />
+        <Tool icon="document-lock-outline" label={t("tool_agreement")} sub={t("tool_agreement_sub")} onPress={() => router.push({ pathname: "/circle/[id]/agreement", params: { id } })} />
+        <Tool icon="sparkles-outline" gold label={access?.plus ? "Plus" : t("plus_title")}
+          sub={!access ? "" : access.plus ? t("tool_plus_on") : access.reason === "trial" ? t("scan_trial_left", { n: access.trial_left }) : access.reason === "admin_off" ? t("tool_ai_off") : access.enabled ? t("tool_ai_free") : t("tool_plus_get")}
+          onPress={() => router.push({ pathname: "/circle/[id]/plus", params: { id } })} />
+      </View>
 
       {admin && sharesOff ? (
         <Pressable onPress={() => router.push({ pathname: "/circle/[id]/shares", params: { id } })}>
@@ -212,7 +222,7 @@ function activityText(x: Ctx, a: Activity) {
   const { t, lang, id, cur, c, admin, me } = x;
   const d = a.data ?? {};
   const amount = d.amount != null ? money(d.amount, cur, lang) : "";
-  return t("act_" + a.verb, { title: d.title ?? "", amount, member: d.member ?? "", from: d.from != null ? Number(d.from).toFixed(0) : "", to: d.to != null ? Number(d.to).toFixed(0) : "", note: d.note ?? "" });
+  return t("act_" + a.verb, { title: d.title ?? "", amount, member: d.member ?? "", from: d.from != null ? Number(d.from).toFixed(0) : "", to: d.to != null ? Number(d.to).toFixed(0) : "", note: d.note ?? "", version: d.version ?? "" });
 }
 
 // ---------------------------------------------------------------- Expenses
@@ -425,6 +435,19 @@ supabase.auth.onAuthStateChange((_e, s) => { _uid = s?.user.id ?? null; });
 const sessionUid = () => _uid;
 
 const methodName = (k: string) => methodDef(k).name;
+
+function Tool({ icon, label, sub, onPress, gold }: { icon: string; label: string; sub: string; onPress: () => void; gold?: boolean }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label}
+      style={({ pressed }) => ({ flex: 1, backgroundColor: pressed ? C.pressed : C.card, borderRadius: R.md, padding: S.md, gap: 6, borderWidth: 1, borderColor: C.line })}>
+      <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: gold ? C.accentSoft : C.primarySoft, alignItems: "center", justifyContent: "center" }}>
+        <Icon name={icon} size={18} color={gold ? C.accent : C.primary} />
+      </View>
+      <Text style={[T.small, { color: C.ink, fontWeight: "700" }]} numberOfLines={1}>{label}</Text>
+      <Text style={[T.tiny, { color: C.ink3 }]} numberOfLines={2}>{sub}</Text>
+    </Pressable>
+  );
+}
 
 function Stat({ label, value, sub, tone }: { label: string; value: string; sub?: string; tone?: string }) {
   return (

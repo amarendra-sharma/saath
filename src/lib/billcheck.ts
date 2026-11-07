@@ -14,12 +14,12 @@ export type BillCheck = {
   flags: CheckFlag[]; items: CheckItem[]; benchmarks: Benchmark[]; dismissed: string[]; had_file: boolean;
   doc: { vendor?: string; gstin?: string; bill_number?: string; patient_name?: string; handwritten?: boolean } | null;
   checked_at: string;
-  ai?: { read_model?: string | null; web_search?: boolean; auto?: boolean; limit_reached?: boolean; message?: string;
+  ai?: { read_model?: string | null; web_search?: boolean; auto?: boolean; limit_reached?: boolean; message?: string; error?: string;
     allowance?: { cap_usd: number; spent_usd: number; remaining_usd: number } };
 };
 
 /** Server codes that mean "AI is unavailable for now" (limits), not "something broke". */
-export const AI_LIMIT_CODES = ["ai_limit_reached", "ai_paused", "too_many_requests", "scan_limit", "upgrade_required", "scan_off", "ai_off"];
+export const AI_LIMIT_CODES = ["ai_limit_reached", "ai_paused", "too_many_requests", "scan_limit", "upgrade_required", "scan_off", "ai_off", "plus_required", "ai_off_circle"];
 
 /** Paid-tier switch: set in the admin console (Settings → Features → "Bill Check only on Plus"); loaded at sign-in. */
 let BILL_CHECK_PAID = false;

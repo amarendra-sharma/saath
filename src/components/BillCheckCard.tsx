@@ -33,7 +33,11 @@ export function BillCheckCard({ expenseId, check, currency, plan, onChange }: {
       const r = await runCheck(expenseId, lang);
       onChange(r);
       // allowance used up: the free checks still ran; say why the AI part didn't
-      if (r.ai?.limit_reached) notify(t("bc_limit_title"), r.ai.message || t("err_ai_limit_reached"));
+      if (r.ai?.limit_reached) {
+        const e = r.ai.error;
+        notify(e === "plus_required" ? t("bc_rules_only_t") : t("bc_limit_title"),
+          e === "plus_required" ? t("bc_rules_only_plus") : e === "ai_off_circle" ? t("err_ai_off_circle") : r.ai.message || t("err_ai_limit_reached"));
+      }
     }
     catch (e: any) {
       const code = e?.code;

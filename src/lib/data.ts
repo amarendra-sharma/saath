@@ -14,6 +14,7 @@ export type Circle = {
   budget_amount: number | null; period: "weekly" | "biweekly" | "monthly" | "quarterly"; due_day: number; start_date: string;
   require_confirmation: boolean; remind_whatsapp: boolean; remind_email: boolean; invite_code: string; status: string;
   city: string | null; country: string | null; plan: "free" | "plus"; bill_check_auto: boolean;
+  ai_override?: "auto" | "on" | "off"; plus_until?: string | null; ai_trial_used?: number;
 };
 export type Summary = {
   circle: Circle; me: string | null; is_admin: boolean;

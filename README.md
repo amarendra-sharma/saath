@@ -1,6 +1,6 @@
 # Saath (साथ)
 
-Saath helps a family share the cost of caring for someone over months or years: medical treatment, elder care, education or an event.
+Saath helps any group share costs over weeks, months or years: a parent's medical care, elder care, education, a household, a trip, a wedding, a club, a building project, a fundraiser, a funeral or a pet. Everything is free; AI bill reading is an optional paid add-on per circle (Saath Plus).
 
 - **Every bill in one place.** Add a bill with a photo or PDF of the receipt. The amount is split automatically.
 - **Shares each person chooses.** Use any percentages, equal or not. A single bill can be split differently when needed.
@@ -10,6 +10,9 @@ Saath helps a family share the cost of caring for someone over months or years: 
 - **Pay any free or low-cost way.** UPI, Wise, Remitly, Zelle, PayPal, Revolut, Venmo, Cash App, SEPA, Indian or international bank transfer, M-Pesa, Pix or cash. Money goes straight to the person or hospital you choose. Saath only shows the payment details and opens the payer's app.
 - **Trust built in.** Payments can need the organiser's confirmation. Someone who pays a bill from their own pocket is credited automatically. There's a full activity log, a reminder log and reimbursements.
 - **Family members without the app** can still be added and reminded. They can claim their place later.
+- **Insights.** 12-month spend vs paid-in chart, category split (all time / 90 days), who has paid what against their agreed share, top sellers, largest bills, record health, CSV export.
+- **Circle agreement.** The organiser publishes a short agreement built from the circle's own settings (shares, period, due day) plus their rules (large-cost limit, late reminder, notice to leave, a mediator, extra terms). Members sign by typing their name; each signature stores the time and a SHA-256 fingerprint of the exact text. Versions, PDF export. It is an electronic record of consent, not legal advice.
+- **Twelve circle types** with their own categories: medical, elder care, education, household, trip, event, project, club/community, fundraiser, funeral/memorial, pets, other.
 - **Six languages:** English, हिन्दी, বাংলা, Español, Français, Português.
 - **One codebase for iPhone, Android and the web** (Expo SDK 58 / React Native 0.88). The backend is Supabase.
 
@@ -69,12 +72,22 @@ Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-f
 
 **Quality test.** `eval/compare.py` compares Haiku against Sonnet on a test set and fails if handwritten or Indian-language amounts differ. Run it again whenever models or prompts change.
 
+## Saath Plus (AI as a paid add-on)
+
+- **Free forever:** circles, members, bills, splits, receipts, reminders, payments, statements, basic Bill Check rules, Insights and agreements.
+- **Saath Plus (per circle, not per person):** AI bill reading, multi-page PDF splitting, deep Bill Check (line items, tampering, price checks).
+- **Prices** are regional (table `saath_pricing`, editable in the admin console). Examples: US $3.99/mo · $29.99/yr · $8.99 for a 90-day pass; UK £3.49; EU €3.99; India ₹149/mo · ₹999/yr · ₹349 pass; everywhere else $2.49. Each tier also sets the Plus circle's monthly AI allowance (A $4, B $3, C $1.50, D $1).
+- **Who gets AI** (`saath_circle_ai_status`): admin switch Off → off; admin switch Always on → on; Plus active → on; charging off (`ai_paid_enabled = false`, the default) → on for everyone; otherwise the free trial (`free_ai_trial_scans`, default 10 reads per circle), then manual entry.
+- **Payments are not connected yet.** "Request Plus" in a circle sends a request to the admin console (Plans tab). Collect payment yourself, then press Grant. When a payment provider is added, it only needs to call the same grant function.
+- Before switching charging on: give your own circles Plus, or set their AI to "Always on" (Circles tab).
+
 ## Admin console
 
-Admins see a shield button on the home screen and an "Admin console" button in Profile (route `/admin`). It has four tabs:
-- **Overview:** AI spend today, this month and all time, with the daily cap and a 30-day chart; counts of people, circles, bills and scans; spend by feature; alerts; and a banner when Anthropic credit runs out.
-- **Circles:** plan (Free/Plus), the monthly AI allowance, automatic Bill Check, and archiving.
+Admins see a shield button on the home screen and an "Admin console" button in Profile (route `/admin`). It has five tabs:
+- **Home:** AI spend today, this month and all time, with the daily cap and a 30-day chart; counts of people, circles, bills, scans, Plus circles and Plus requests; spend by feature; alerts; and a banner when Anthropic credit runs out.
+- **Circles:** AI switch per circle (Auto / Always on / Off), grant 1, 3 or 12 months of Plus or revoke it, manual plan, the monthly AI allowance, automatic Bill Check, and archiving.
+- **Plans:** open Plus requests (Grant / Decline) and the regional price table (edit or add a country).
 - **People:** search everyone, and make someone an admin or remove admin access.
-- **Settings:** feature switches (AI bill reading, AI in Bill Check, web price search, Bill Check only on Plus), limits, alerts and advanced AI settings. Changes apply to the next bill read or check.
+- **Settings:** feature switches (AI bill reading, AI in Bill Check, web price search, charge for AI), limits (including free trial reads), alerts and advanced AI settings. Changes apply to the next bill read or check.
 
-Admins are listed in `saath_admins` (first admin: the owner). Every admin action goes through a SECURITY DEFINER function that refuses non-admins (migration 013). The app never holds a service key.
+Admins are listed in `saath_admins` (first admin: the owner). Every admin action goes through a SECURITY DEFINER function that refuses non-admins (migrations 013 and 014). The app never holds a service key.

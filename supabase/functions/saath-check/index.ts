@@ -317,7 +317,7 @@ Deno.serve(async (req) => {
 
     // spend guard: if the AI allowance is used up, still run the free rules and say so
     const g: GuardResult = ownerKey ? { ok: true, allowance: await allowance(admin, exp.circle_id) } : await guard(admin, cfg, { circleId: exp.circle_id, userId, kind: "check" });
-    if (!g.ok && !["ai_limit_reached", "ai_paused", "ai_off"].includes(g.error ?? "")) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance } }, g.status ?? 429);
+    if (!g.ok && !["ai_limit_reached", "ai_paused", "ai_off", "ai_off_circle", "plus_required"].includes(g.error ?? "")) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance } }, g.status ?? 429);
     // paid switch: env secret or admin console (Features → Bill Check only on Plus)
     const PAID = PAID_ENV || cfg.bill_check_paid === true;
     if (PAID && !ownerKey && circle?.plan !== "plus") return json({ error: "upgrade_required", message: "Bill Check is part of Saath Plus." }, 402);
@@ -475,7 +475,7 @@ Deno.serve(async (req) => {
     const a = await allowance(admin, exp.circle_id);
     return json({ ok: true, ...row, dismissed: prev?.dismissed ?? [],
       ai: { read_model: readModel, read_source: readSource, read_reasons: readReasons, web_search: ask.length > 0, searches, auto, allowance: a,
-        limit_reached: !aiAllowed, message: g.ok ? undefined : g.message } });
+        limit_reached: !aiAllowed, message: g.ok ? undefined : g.message, access: g.ai ?? null, error: g.ok ? undefined : g.error } });
   } catch (err) {
     const msg = String((err as Error)?.message ?? err);
     const code = ["file_not_found", "file_too_large", "too_many_pages"].includes(msg) ? msg : "check_failed";

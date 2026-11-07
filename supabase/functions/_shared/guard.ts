@@ -26,18 +26,26 @@ export async function allowance(admin: any, circleId: string): Promise<Allowance
   };
 }
 
-export type GuardResult = { ok: boolean; allowance: Allowance; status?: number; error?: string; message?: string };
+export type AiStatus = { enabled: boolean; reason: string; paid_mode: boolean; plus: boolean; plus_until: string | null; trial_left: number; trial_total: number; override: string };
+export type GuardResult = { ok: boolean; allowance: Allowance; status?: number; error?: string; message?: string; ai?: AiStatus | null };
 
 /** Run before any AI call. kind decides which daily limit applies. */
 export async function guard(admin: any, cfg: Record<string, any>, o: { circleId: string; userId: string | null; kind: "scan" | "check" }): Promise<GuardResult> {
   const a = await allowance(admin, o.circleId);
-  const no = (status: number, error: string, message: string): GuardResult => ({ ok: false, status, error, message, allowance: a });
+  const { data: st } = await admin.rpc("saath_circle_ai_status", { p_circle: o.circleId });
+  const ai = (st ?? null) as AiStatus | null;
+  const no = (status: number, error: string, message: string): GuardResult => ({ ok: false, status, error, message, allowance: a, ai });
 
   // feature switches set by the app admin (admin console → Features)
   if (o.kind === "scan" && cfg.scan_enabled === false)
     return no(503, "scan_off", "Bill reading is switched off for now. Please enter the bill by hand.");
   if (o.kind === "check" && cfg.bill_check_ai_enabled === false)
     return no(503, "ai_off", "The AI part of Bill Check is switched off for now; the basic checks still ran.");
+  // per-circle access: Saath Plus, free trial, or the admin's switch for this circle
+  if (ai && !ai.enabled) {
+    if (ai.reason === "admin_off") return no(403, "ai_off_circle", "AI features are switched off for this circle. You can still add bills by hand.");
+    return no(402, "plus_required", "AI bill reading is part of Saath Plus. You can still add bills by hand, and the basic checks still run.");
+  }
 
   const { data: day } = await admin.rpc("saath_ai_day_cost");
   if (Number(day ?? 0) >= Number(cfg.daily_cap_usd)) {
@@ -62,7 +70,7 @@ export async function guard(admin: any, cfg: Record<string, any>, o: { circleId:
     const { count } = await admin.from("saath_bill_checks").select("expense_id", { count: "exact", head: true }).eq("circle_id", o.circleId).gte("checked_at", since);
     if ((count ?? 0) >= Number(cfg.checks_per_circle_day)) return no(429, "scan_limit", `This circle can check up to ${cfg.checks_per_circle_day} bills a day. Please try again tomorrow.`);
   }
-  return { ok: true, allowance: a };
+  return { ok: true, allowance: a, ai };
 }
 
 /** After AI calls: alert once per UTC day when spend passes the threshold. Never throws. */

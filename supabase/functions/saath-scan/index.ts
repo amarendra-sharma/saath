@@ -90,7 +90,7 @@ Deno.serve(async (req) => {
     if (!member) return json({ error: "forbidden" }, 403);
 
     const g = await guard(admin, cfg, { circleId: circle_id, userId: u.user.id, kind: "scan" });
-    if (!g.ok) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance } }, g.status ?? 429);
+    if (!g.ok) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance, access: g.ai ?? null } }, g.status ?? 429);
 
     const { data: circle } = await admin.from("saath_circles").select("currency").eq("id", circle_id).single();
     const currency = circle?.currency ?? "INR";
@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
         return json({ error: "scan_failed", detail: String(e).slice(0, 300) }, 502);
       }
       await storeRead(admin, path, pages, circle_id, res, await sha256(bytes));
+      if (g.ai?.reason === "trial") await admin.rpc("saath_ai_trial_use", { p_circle: circle_id });   // one free-trial read used
       afterCalls(admin, cfg);
     }
     const documents = (res.documents ?? []).map(forApp);
@@ -126,7 +127,8 @@ Deno.serve(async (req) => {
     });
     const a = (await admin.rpc("saath_ai_allowance", { p_circle: circle_id })).data;
     return json({ ok: true, documents, overall_note: res.overall_note,
-      ai: { model: res.model, escalated: res.escalated, reasons: res.reasons, allowance: a } });
+      ai: { model: res.model, escalated: res.escalated, reasons: res.reasons, allowance: a,
+        access: g.ai ? { ...g.ai, trial_left: g.ai.reason === "trial" && !hit ? Math.max(0, g.ai.trial_left - 1) : g.ai.trial_left } : null } });
   } catch (err) {
     return json({ error: "scan_failed", detail: String(err).slice(0, 300) }, 500);
   }

@@ -1,8 +1,8 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, TextInput, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { AttachBar } from "../../../components/AttachBar";
-import { AmountField, Avatar, Banner, Button, Card, Chips, Field, Loading, Screen, Toggle, hashTone, st } from "../../../components/ui";
+import { AmountField, Avatar, Banner, Button, Card, Chips, Field, Icon, Loading, Pill, Screen, Toggle, hashTone, st } from "../../../components/ui";
 import { confirm, notify, useApp } from "../../../lib/app";
 import { CATEGORIES_BY_PURPOSE, CATEGORY_ICON } from "../../../lib/constants";
 import { Expense, Summary, loadSummary, useLoad } from "../../../lib/data";
@@ -13,6 +13,7 @@ import { LocalFile, pickPdf, pickPhotos, takePhoto, uploadFile } from "../../../
 import { ScanResult, isBill, scanFile, setPendingScan } from "../../../lib/scan";
 import { ActivityIndicator } from "react-native";
 import { billCheckAllowed, runCheck } from "../../../lib/billcheck";
+import { AiAccess, aiLocked, aiStatus, onTrial } from "../../../lib/plus";
 
 const shift = (iso: string, days: number) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + days); return d.toISOString().slice(0, 10); };
 
@@ -20,6 +21,7 @@ export default function ExpenseForm() {
   const { id, eid } = useLocalSearchParams<{ id: string; eid?: string }>();
   const { t, lang } = useApp();
   const sum = useLoad<Summary>(() => loadSummary(id), [id]);
+  const access = useLoad<AiAccess | null>(() => aiStatus(id), [id]);
   const [loaded, setLoaded] = useState(!eid);
   const [amount, setAmount] = useState("");
   const [title, setTitle] = useState("");
@@ -103,9 +105,12 @@ export default function ExpenseForm() {
           text: (d.confidence === "high" ? t("scan_filled") : t("scan_check")) + (d.note ? ` ${d.note}` : "") });
       }
     } catch (e: any) {
+      if (e?.code === "plus_required" || e?.code === "ai_off_circle") access.reload();
       setScanMsg({ tone: "owe", text: t("err_" + (e?.code || "scan_failed")) === "err_" + (e?.code || "scan_failed") ? t("err_scan_failed") : t("err_" + e.code) });
-    } finally { setScanning(false); }
+    } finally { setScanning(false); if (onTrial(access.data)) access.reload(); }
   };
+  const goPlus = () => router.push({ pathname: "/circle/[id]/plus", params: { id } });
+  const a = access.data;
 
   const save = async () => {
     if (amt <= 0 || !title.trim()) { notify(t("fill_amount_title")); return; }
@@ -153,9 +158,26 @@ export default function ExpenseForm() {
   return (
     <Screen title={eid ? t("edit_expense") : t("add_expense")} subtitle={s.circle.name}
       footer={<Button label={eid ? t("save_changes") : t("save_expense")} icon="checkmark" loading={busy} disabled={amt <= 0 || !title.trim() || !splitOk} onPress={save} />}>
-      {!eid ? (
+      {!eid && aiLocked(a) ? (
+        <Card onPress={a?.reason === "admin_off" ? undefined : goPlus}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
+            <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.accentSoft, alignItems: "center", justifyContent: "center" }}>
+              <Icon name={a?.reason === "admin_off" ? "ban-outline" : "lock-closed-outline"} size={20} color={C.accent} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[T.h3, { color: C.ink }]}>{t("scan_title")}</Text>
+              <Text style={[T.small, { color: C.ink2 }]}>{a?.reason === "admin_off" ? t("scan_locked_off") : t("scan_locked_plus")}</Text>
+            </View>
+            {a?.reason === "admin_off" ? null : <Icon name="chevron-forward" size={20} color={C.ink3} />}
+          </View>
+        </Card>
+      ) : !eid ? (
         <Card tone="accent">
-          <Text style={[T.h3, { color: C.ink }]}>{t("scan_title")}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+            <Text style={[T.h3, { color: C.ink, flex: 1 }]}>{t("scan_title")}</Text>
+            {onTrial(a) ? <Pressable onPress={goPlus} hitSlop={8}><Pill tone="pending" text={t("scan_trial_left", { n: a!.trial_left })} /></Pressable> : null}
+            {a?.plus ? <Pill tone="primary" text="Plus" /> : null}
+          </View>
           <Text style={[T.small, { color: C.ink2 }]}>{t("scan_hint")}</Text>
           {scanning ? (
             <View style={{ flexDirection: "row", alignItems: "center", gap: S.md, paddingVertical: S.sm }}>
