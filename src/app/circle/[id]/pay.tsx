@@ -1,12 +1,14 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
-import { Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import { AttachBar } from "../../../components/AttachBar";
+import { QrCode } from "../../../components/QrCode";
 import { AmountField, Banner, Button, Card, Chips, Field, Icon, Loading, Screen, Section, Toggle } from "../../../components/ui";
 import { notify, useApp } from "../../../lib/app";
 import { PayMethod, Summary, loadSummary, useLoad } from "../../../lib/data";
 import { CURRENCIES, money, parseAmount, todayISO } from "../../../lib/format";
-import { methodDef, methodText } from "../../../lib/payments";
+import { ABROAD, methodDef, methodText } from "../../../lib/payments";
+import { payCountry } from "../../../lib/plus";
 import { copy, openUrl } from "../../../lib/share";
 import { errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
@@ -31,6 +33,9 @@ export default function Pay() {
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState<"send" | "record">(reimb ? "record" : "send");
+  // which method's QR is open; on the web (a computer, usually) the first QR opens by itself
+  const [qrOpen, setQrOpen] = useState<string | null>(null);
+  const web = Platform.OS === "web";
 
   const me = s?.members.find((m) => m.id === s.me);
   const target = s?.members.find((m) => m.id === (memberId ?? s?.me));
@@ -61,6 +66,11 @@ export default function Pay() {
   const cur = s.circle.currency;
   const amt = parseAmount(amount);
   const note = `${s.circle.name} · Saath`;
+  const goPayees = () => router.push({ pathname: "/circle/[id]/payees", params: { id } });
+  const country = (s.circle.country || "").toUpperCase();
+  const here = payCountry(null);
+  const abroad = !!country && here !== "*" && here !== country;
+  const firstQr = (payee?.methods ?? []).find((m) => methodDef(m.method).qr?.({ handle: m.handle ?? "", amount: 1, currency: cur, name: payee?.name ?? "", note, details: m.details ?? {}, city: s.circle.city ?? "" }));
 
   const submit = async () => {
     if (amt <= 0) { notify(t("fill_amount")); return; }
@@ -84,7 +94,11 @@ export default function Pay() {
 
   const MethodCard = ({ m }: { m: PayMethod }) => {
     const def = methodDef(m.method);
-    const link = def.link?.({ handle: m.handle ?? "", amount: amt || due, currency: cur, name: payee?.name ?? "", note });
+    const args = { handle: m.handle ?? "", amount: amt || due, currency: cur, name: payee?.name ?? "", note, details: m.details ?? {}, city: s.circle.city ?? "" };
+    // upi:// only opens on a phone that has a UPI app; on the web, show the QR to scan instead
+    const link = web && m.method === "upi" ? null : def.link?.(args);
+    const qr = def.qr?.(args) ?? null;
+    const showQr = !!qr && (qrOpen === m.id || (qrOpen === null && web && firstQr?.id === m.id));
     return (
       <View style={{ borderWidth: 1.5, borderColor: C.line, borderRadius: R.md, padding: S.md, gap: S.sm, backgroundColor: C.card }}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
@@ -100,10 +114,21 @@ export default function Pay() {
         {(def.fields ?? []).filter((f) => m.details?.[f.key]).map((f) => (
           <Text key={f.key} selectable style={[T.small, { color: C.ink2 }]}>{t(f.labelKey)}: <Text style={{ fontWeight: "700", color: C.ink }}>{m.details[f.key]}</Text></Text>
         ))}
-        <View style={{ flexDirection: "row", gap: S.sm }}>
-          {link ? <Button small icon="open-outline" label={t("open_x", { name: def.name })} style={{ flex: 1 }}
+        {def.howKey && !link ? <Text style={[T.small, { color: C.ink2 }]}>{t(def.howKey, { amount: money(amt || due, cur, lang) })}</Text> : null}
+        {showQr && qr ? (
+          <View style={{ gap: S.sm, alignItems: "center", paddingVertical: S.sm }}>
+            <QrCode value={qr} size={220} label={t("qr_label", { name: def.name })} />
+            <Text style={[T.small, { color: C.ink2, textAlign: "center" }]}>{t(def.qrHintKey ?? "qr_hint_upi", { amount: money(amt || due, cur, lang) })}</Text>
+          </View>
+        ) : null}
+        <View style={{ flexDirection: "row", gap: S.sm, flexWrap: "wrap" }}>
+          {link ? <Button small icon="open-outline" label={t("open_x", { name: def.name })} style={{ flexGrow: 1 }}
             onPress={async () => { setMethod(m.method); if (!(await openUrl(link))) notify(t("couldnt_open", { name: def.name })); }} /> : null}
-          <Button small kind="secondary" icon="copy-outline" label={t("copy_details")} style={{ flex: 1 }}
+          {qr ? <Button small kind={link ? "secondary" : "primary"} icon="qr-code-outline" label={showQr ? t("hide_qr") : t("show_qr")} style={{ flexGrow: 1 }}
+            onPress={() => { setMethod(m.method); setQrOpen(showQr ? "" : m.id); }} /> : null}
+          {m.method === "pix" && qr ? <Button small kind="secondary" icon="copy-outline" label={t("copy_pix")} style={{ flexGrow: 1 }}
+            onPress={async () => { setMethod("pix"); await copy(qr); notify(t("copied")); }} /> : null}
+          <Button small kind="secondary" icon="copy-outline" label={t("copy_details")} style={{ flexGrow: 1 }}
             onPress={async () => { setMethod(m.method); await copy(methodText(m, t)); notify(t("copied")); }} />
         </View>
       </View>
@@ -124,7 +149,10 @@ export default function Pay() {
             {due <= 0.5 ? <Text style={[T.small, { color: C.ink2 }]}>{t("pay_ahead_ok")}</Text> : null}
           </Card>
           {s.payees.length === 0 ? (
-            <Banner tone="pending" text={s.is_admin ? t("no_payee_admin") : t("no_payee_member")} />
+            <Card tone="accent">
+              <Text style={[T.small, { color: C.ink2 }]}>{s.is_admin ? t("no_payee_admin") : t("no_payee_member")}</Text>
+              {s.is_admin ? <Button icon="wallet-outline" label={t("add_pay_details")} onPress={goPayees} /> : null}
+            </Card>
           ) : (
             <>
               {s.payees.length > 1 ? (
@@ -133,8 +161,26 @@ export default function Pay() {
               <Section title={t("send_to_x", { name: payee?.name ?? "" })}>
                 {payee?.notes ? <Text style={[T.small, { color: C.ink2 }]}>{payee.notes}</Text> : null}
                 {(payee?.methods ?? []).map((m) => <MethodCard key={m.id} m={m} />)}
-                {!payee?.methods.length ? <Banner text={t("payee_no_methods")} /> : null}
+                {!payee?.methods.length ? (
+                  <Card tone="accent">
+                    <Text style={[T.small, { color: C.ink2 }]}>{s.is_admin ? t("payee_no_methods_admin", { name: payee?.name ?? "" }) : t("payee_no_methods_member", { name: payee?.name ?? "" })}</Text>
+                    {s.is_admin ? <Button icon="add" label={t("add_pay_details")} onPress={goPayees} /> : null}
+                  </Card>
+                ) : null}
               </Section>
+              {abroad && payee?.methods.length ? (
+                <Card>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+                    <Icon name="globe-outline" size={20} color={C.primary} />
+                    <Text style={[T.h3, { color: C.ink, flex: 1 }]}>{t("abroad_t")}</Text>
+                  </View>
+                  <Text style={[T.small, { color: C.ink2 }]}>{t("abroad_text", { cur })}</Text>
+                  <View style={{ flexDirection: "row", gap: S.sm, flexWrap: "wrap" }}>
+                    {ABROAD.map((a) => <Button key={a.name} small kind="secondary" icon="open-outline" label={a.name} style={{ flexGrow: 1 }}
+                      onPress={async () => { if (!(await openUrl(a.url))) notify(t("couldnt_open", { name: a.name })); }} />)}
+                  </View>
+                </Card>
+              ) : null}
               <Banner tone="primary" icon="bulb-outline" text={t("cheapest_tip")} />
             </>
           )}

@@ -465,4 +465,22 @@ export const es: Partial<Record<StringKey, string>> = {
   agr_changes: "Cualquier cambio a este acuerdo se publica como una nueva versión y los miembros firman de nuevo.",
   agr_s_extra: "Otras condiciones",
   agr_footer: "Aceptado electrónicamente en Saath: cada firma registra el nombre escrito del miembro, la hora y una huella de este texto exacto.",
+
+  // ── payment links and QR codes
+  add_pay_details: "Añadir datos de pago",
+  payee_no_methods_admin: "{name} aún no tiene datos de pago, así que no hay nada que tocar. Añadan su UPI ID, cuenta bancaria, Wise, PayPal u otra forma de pago.",
+  payee_no_methods_member: "{name} aún no ha añadido datos de pago. Pidan al organizador que los añada; pueden registrar un pago ya hecho.",
+  show_qr: "Mostrar código QR",
+  hide_qr: "Ocultar código QR",
+  qr_label: "Código QR de pago {name}",
+  qr_hint_upi: "Escaneen con cualquier app UPI (Google Pay, PhonePe, Paytm, BHIM o la de su banco). El importe {amount} ya está puesto.",
+  qr_hint_sepa: "Escaneen con su app bancaria (la mayoría de bancos europeos leen este código). El importe {amount} y el IBAN ya están puestos.",
+  qr_hint_pix: "Escaneen con la app de su banco, o copien el código Pix y péguenlo en Pix copia e cola. El importe {amount} ya está puesto.",
+  copy_pix: "Copiar código Pix",
+  how_zelle: "Abran la app de su banco, elijan Zelle y envíen {amount} al correo o teléfono de arriba.",
+  how_mpesa: "En M-Pesa, elijan Send money (o Lipa na M-Pesa para un till) y envíen {amount} al número de arriba.",
+  how_bank: "Copien los datos en la app o web de su banco y envíen {amount}. Pongan el nombre del círculo como referencia.",
+  abroad_t: "¿Pagan desde otro país?",
+  abroad_text: "Estos servicios envían {cur} a una cuenta bancaria o UPI ID por mucho menos que una transferencia internacional. Copien los datos de arriba y abran uno:",
+  upi_id_hint: "Un UPI ID tiene la forma nombre@banco (por ejemplo 98xxxxxx10@ybl). Sin la parte con @, las apps de pago no pueden abrirlo.",
 };

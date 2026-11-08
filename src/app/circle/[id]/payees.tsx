@@ -106,6 +106,8 @@ export default function Payees() {
         {def ? <Text style={[T.tiny, { color: C.ok, fontWeight: "700" }]}>{t(def.costKey)} · {t(def.region)}</Text> : null}
         {def ? <Field label={t(def.handleLabelKey)} value={editMethod?.handle ?? ""} placeholder={def.handlePlaceholder} autoCapitalize="none"
           onChangeText={(v) => setEditMethod({ ...editMethod!, handle: v })} /> : null}
+        {editMethod?.method === "upi" && (editMethod.handle ?? "").trim() && !(editMethod.handle ?? "").includes("@") ? (
+          <Text style={[T.small, { color: C.owe }]}>{t("upi_id_hint")}</Text>) : null}
         {def?.fields?.map((f) => (
           <Field key={f.key} label={t(f.labelKey)} value={editMethod?.details?.[f.key] ?? ""} placeholder={f.placeholder} autoCapitalize={f.key === "account_name" || f.key === "bank" ? "words" : "characters"}
             onChangeText={(v) => setEditMethod({ ...editMethod!, details: { ...(editMethod?.details ?? {}), [f.key]: v } })} />

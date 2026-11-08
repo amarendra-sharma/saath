@@ -465,4 +465,22 @@ export const fr: Partial<Record<StringKey, string>> = {
   agr_changes: "Toute modification de cet accord est publiée comme nouvelle version, et les membres signent à nouveau.",
   agr_s_extra: "Autres conditions",
   agr_footer: "Accepté électroniquement dans Saath : chaque signature enregistre le nom tapé du membre, l'heure et une empreinte de ce texte exact.",
+
+  // ── payment links and QR codes
+  add_pay_details: "Ajouter les coordonnées de paiement",
+  payee_no_methods_admin: "{name} n'a pas encore de coordonnées de paiement, il n'y a donc rien à toucher. Ajoutez son UPI ID, son compte bancaire, Wise, PayPal ou tout autre moyen.",
+  payee_no_methods_member: "{name} n'a pas encore ajouté de coordonnées de paiement. Demandez à l'organisateur de les ajouter ; vous pouvez enregistrer un paiement déjà fait.",
+  show_qr: "Afficher le QR code",
+  hide_qr: "Masquer le QR code",
+  qr_label: "QR code de paiement {name}",
+  qr_hint_upi: "Scannez avec n'importe quelle appli UPI (Google Pay, PhonePe, Paytm, BHIM ou celle de votre banque). Le montant {amount} est déjà saisi.",
+  qr_hint_sepa: "Scannez avec votre appli bancaire (la plupart des banques européennes lisent ce code). Le montant {amount} et l'IBAN sont déjà saisis.",
+  qr_hint_pix: "Scannez avec l'appli de votre banque, ou copiez le code Pix et collez-le dans Pix copia e cola. Le montant {amount} est déjà saisi.",
+  copy_pix: "Copier le code Pix",
+  how_zelle: "Ouvrez l'appli de votre banque, choisissez Zelle et envoyez {amount} à l'e-mail ou au téléphone ci-dessus.",
+  how_mpesa: "Dans M-Pesa, choisissez Send money (ou Lipa na M-Pesa pour un till) et envoyez {amount} au numéro ci-dessus.",
+  how_bank: "Copiez les coordonnées dans l'appli ou le site de votre banque et envoyez {amount}. Mettez le nom du cercle en référence.",
+  abroad_t: "Vous payez depuis un autre pays ?",
+  abroad_text: "Ces services envoient des {cur} sur un compte bancaire ou un UPI ID pour bien moins cher qu'un virement international. Copiez les coordonnées ci-dessus, puis ouvrez-en un :",
+  upi_id_hint: "Un UPI ID ressemble à nom@banque (par exemple 98xxxxxx10@ybl). Sans la partie avec @, les applis de paiement ne peuvent pas l'ouvrir.",
 };

@@ -799,5 +799,23 @@ export const en = {
   agr_changes: "Any change to this agreement is published as a new version, and members sign again.",
   agr_s_extra: "Other terms",
   agr_footer: "Accepted electronically in Saath: each signature records the member's typed name, the time and a fingerprint of this exact text.",
+
+  // ── payment links and QR codes
+  add_pay_details: "Add payment details",
+  payee_no_methods_admin: "{name} has no payment details yet, so there is nothing to tap. Add their UPI ID, bank account, Wise, PayPal or any other way to pay.",
+  payee_no_methods_member: "{name} hasn't added payment details yet. Ask the organiser to add them; you can still record a payment you've made.",
+  show_qr: "Show QR code",
+  hide_qr: "Hide QR code",
+  qr_label: "{name} payment QR code",
+  qr_hint_upi: "Scan with any UPI app (Google Pay, PhonePe, Paytm, BHIM or your bank's app). The amount {amount} is filled in.",
+  qr_hint_sepa: "Scan with your banking app (most banks in Europe read this code). The amount {amount} and the IBAN are filled in.",
+  qr_hint_pix: "Scan with your bank's app, or copy the Pix code and paste it in Pix copia e cola. The amount {amount} is filled in.",
+  copy_pix: "Copy Pix code",
+  how_zelle: "Open your bank's app, choose Zelle and send {amount} to the email or phone above.",
+  how_mpesa: "In M-Pesa, choose Send money (or Lipa na M-Pesa for a till) and send {amount} to the number above.",
+  how_bank: "Copy the details into your bank's app or website and send {amount}. Add the circle name as the reference.",
+  abroad_t: "Paying from another country?",
+  abroad_text: "These services send {cur} to a bank account or UPI ID for much less than a bank wire. Copy the details above, then open one:",
+  upi_id_hint: "A UPI ID looks like name@bank (for example 98xxxxxx10@ybl). Without the @ part, payment apps can't open it.",
 };
 export type StringKey = keyof typeof en;
