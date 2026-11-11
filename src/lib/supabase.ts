@@ -46,7 +46,9 @@ export async function callFn<T = any>(name: string, body: unknown, authed = fals
 }
 
 /** Postgres raises come back as messages; strip the noise. */
-export function errText(e: any): string {
-  const m = String(e?.message ?? e ?? "");
-  return m.replace(/^.*?ERROR:\s*/i, "").slice(0, 200);
+/** Error text for people. With t, a database code such as "bill_has_payment" becomes the sentence err_bill_has_payment. */
+export function errText(e: any, t?: (k: string) => string): string {
+  const m = String(e?.message ?? e ?? "").replace(/^.*?ERROR:\s*/i, "").trim();
+  if (t && /^[a-z_]+$/.test(m)) { const s = t("err_" + m); if (s !== "err_" + m) return s; }
+  return m.slice(0, 200);
 }

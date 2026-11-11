@@ -145,14 +145,14 @@ export default function ExpenseForm() {
       // Bill Check runs in the background; its result appears on the bill
       if (s.circle.bill_check_auto && billCheckAllowed(s.circle.plan) && (scanned || files.length) && expenseId) runCheck(expenseId, lang, true).catch(() => {});
       router.back();
-    } catch (e) { notify(t("something_wrong"), errText(e)); }
+    } catch (e) { notify(t("something_wrong"), errText(e, t)); }
     finally { setBusy(false); }
   };
 
   const remove = async () => {
     if (!(await confirm(t("delete_expense_q"), t("delete_expense_text"), t("delete"), t("cancel"), true))) return;
     const { error } = await supabase.from("saath_expenses").delete().eq("id", eid);
-    if (error) notify(t("something_wrong"), errText(error)); else router.dismissTo({ pathname: "/circle/[id]", params: { id } });
+    if (error) notify(t("something_wrong"), errText(error, t)); else router.dismissTo({ pathname: "/circle/[id]", params: { id } });
   };
 
   return (

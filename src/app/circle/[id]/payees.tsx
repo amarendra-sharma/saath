@@ -94,7 +94,8 @@ export default function Payees() {
         <Field label={t("payee_name")} value={editPayee?.name ?? ""} onChangeText={(v) => setEditPayee({ ...editPayee!, name: v })} placeholder={t("payee_name_ph")} />
         <Chips value={editPayee?.kind ?? "person"} onChange={(v) => setEditPayee({ ...editPayee!, kind: v })} options={KINDS.map((k) => ({ value: k, label: t("payee_" + k) }))} />
         <Chips value={editPayee?.member_id ?? ""} onChange={(v) => setEditPayee({ ...editPayee!, member_id: v || null, name: editPayee?.name || s.members.find((m) => m.id === v)?.name })}
-          options={[{ value: "", label: t("not_a_member") }, ...s.members.filter((m) => m.status === "active").map((m) => ({ value: m.id, label: m.name }))]} />
+          options={[{ value: "", label: t("not_a_member") }, ...s.members.filter((m) => m.status === "active").map((m) => ({ value: m.id, label: m.name, icon: m.joined ? "phone-portrait-outline" : undefined }))]} />
+        {editPayee?.kind === "person" ? <Text style={[T.tiny, { color: C.ink3 }]}>{t("payee_member_hint")}</Text> : null}
         <Field label={t("notes_optional")} value={editPayee?.notes ?? ""} onChangeText={(v) => setEditPayee({ ...editPayee!, notes: v })} placeholder={t("payee_notes_ph")} multiline />
         <Toggle label={t("main_payee")} hint={t("main_payee_hint")} value={editPayee?.is_default ?? s.payees.length === 0} onChange={(v) => setEditPayee({ ...editPayee!, is_default: v })} />
         <Button label={t("save")} loading={busy} disabled={!editPayee?.name?.trim()} onPress={savePayee} />

@@ -1,7 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Modal, Pressable, Text, View } from "react-native";
-import { Avatar, Button, Card, Icon, Loading, Row, Screen, Section, hashTone } from "../../../components/ui";
+import { Avatar, Button, Card, Icon, Loading, Pill, Row, Screen, Section, hashTone } from "../../../components/ui";
 import { confirm, notify, useApp } from "../../../lib/app";
 import { CATEGORY_ICON } from "../../../lib/constants";
 import { Expense, Summary, loadSummary, memberName, useLoad } from "../../../lib/data";
@@ -29,6 +29,11 @@ export default function ExpenseView() {
     return { e: e as Full, charges: (charges ?? []) as any };
   }, [eid]);
   const check = useLoad<BillCheck | null>(() => loadCheck(eid), [eid]);
+  // was this bill actually paid to the provider, and by which recorded payment?
+  const paid = useLoad<{ amount: number; p: { id: string; vendor: string | null; paid_on: string; status: string; proof_path: string | null; payee_id: string } }[]>(async () => {
+    const { data } = await supabase.from("saath_payout_items").select("amount, p:saath_payouts(id, vendor, paid_on, status, proof_path, payee_id)").eq("expense_id", eid);
+    return (data ?? []) as any;
+  }, [eid]);
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [big, setBig] = useState<string | null>(null);
 
@@ -70,6 +75,34 @@ export default function ExpenseView() {
         <Text style={[T.small, { color: C.ink2 }]}>
           {e.paid_by_member_id ? t("paid_by_x", { name: memberName(s, e.paid_by_member_id) }) : s.payees[0] ? t("paid_by_payee", { name: s.payees[0].name }) : t("paid_from_fund")}
         </Text>
+        {!e.paid_by_member_id ? (() => {
+          const rows = paid.data ?? [];
+          const sum = rows.reduce((a, r) => a + Number(r.amount), 0);
+          const full = sum >= Number(e.amount) - 1;
+          const verified = full && rows.every((r) => r.p?.status === "verified");
+          const tone = verified ? "ok" : full ? "primary" : sum > 0 ? "pending" : "owe";
+          const label = verified ? t("bs_verified") : full ? t("bs_paid") : sum > 0 ? t("bs_partial", { amount: money(sum, cur, lang) }) : t("bs_unpaid");
+          const payeeName = (pid: string) => s.payees.find((y) => y.id === pid)?.name ?? "";
+          return (
+            <View style={{ gap: 6, borderTopWidth: 1, borderTopColor: C.line, paddingTop: S.sm }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
+                <Text style={[T.small, { color: C.ink2, fontWeight: "700", flex: 1 }]}>{t("bs_title")}</Text>
+                <Pill tone={tone} text={label} />
+              </View>
+              {rows.map((r, i) => (
+                <Text key={i} style={[T.small, { color: C.ink2 }]}>
+                  {t("bs_line", { amount: money(r.amount, cur, lang), date: dateLabel(r.p?.paid_on ?? "", lang), vendor: r.p?.vendor || t("tr_a_provider"), name: payeeName(r.p?.payee_id ?? "") })}
+                  {" · "}{t("tr_st_" + (r.p?.status ?? "recorded"))}{r.p?.proof_path ? "" : ` · ${t("tr_no_proof")}`}
+                </Text>
+              ))}
+              {!rows.length ? <Text style={[T.tiny, { color: C.ink3 }]}>{t("bs_unpaid_hint")}</Text> : null}
+              <View style={{ flexDirection: "row", gap: S.sm, flexWrap: "wrap" }}>
+                {!full ? <Button small icon="arrow-up-circle-outline" label={t("tr_mark_paid")} onPress={() => router.push({ pathname: "/circle/[id]/payout", params: { id, eid } })} /> : null}
+                <Button small kind="secondary" icon="git-network-outline" label={t("tr_title")} onPress={() => router.push({ pathname: "/circle/[id]/trail", params: { id, tab: rows.length ? "out" : "bills" } })} />
+              </View>
+            </View>
+          );
+        })() : null}
         {e.notes ? <Text style={[T.body, { color: C.ink }]}>{e.notes}</Text> : null}
       </Card>
 

@@ -14,6 +14,7 @@ import { methodDef } from "../../../lib/payments";
 import { callFn, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
 import { AiAccess, aiStatus } from "../../../lib/plus";
+import { BILL_TONE, BillStatus, Trail, loadBillStatus, loadTrail } from "../../../lib/trail";
 import { AI_LIMIT_CODES, billCheckAllowed, loadCircleChecks, openFlags, openRisk, runCheck } from "../../../lib/billcheck";
 
 type Tab = "overview" | "expenses" | "payments" | "people";
@@ -42,7 +43,9 @@ export default function CircleScreen() {
   }, [id]);
 
   const access = useLoad<AiAccess | null>(() => aiStatus(id), [id]);
-  const reloadAll = () => { sum.reload(); exp.reload(); pay.reload(); act.reload(); access.reload(); };
+  const trail = useLoad<Trail | null>(() => loadTrail(id).catch(() => null), [id]);
+  const billStatus = useLoad<Record<string, BillStatus>>(() => loadBillStatus(id), [id]);
+  const reloadAll = () => { sum.reload(); exp.reload(); pay.reload(); act.reload(); access.reload(); trail.reload(); billStatus.reload(); };
   const s = sum.data;
   if (!s) return sum.error ? <Empty icon="alert-circle-outline" title={t("something_wrong")} text={sum.error} action={<Button label={t("go_home")} onPress={() => router.replace("/home")} />} /> : <Loading />;
 
@@ -86,8 +89,8 @@ export default function CircleScreen() {
 
       <ScrollView contentContainerStyle={{ padding: S.lg, paddingTop: S.sm, gap: S.lg, paddingBottom: ins.bottom + 120 }}
         refreshControl={<RefreshControl refreshing={false} onRefresh={reloadAll} tintColor={C.primary} />}>
-        {tab === "overview" && <Overview x={x} s={s} access={access.data} acts={act.data ?? []} myBal={myBal} showWelcome={showWelcome} closeWelcome={() => setShowWelcome(false)} goTab={setTab} pendingCount={pendingCount} />}
-        {tab === "expenses" && <Expenses x={x} s={s} items={exp.data} />}
+        {tab === "overview" && <Overview x={x} s={s} access={access.data} trail={trail.data} acts={act.data ?? []} myBal={myBal} showWelcome={showWelcome} closeWelcome={() => setShowWelcome(false)} goTab={setTab} pendingCount={pendingCount} />}
+        {tab === "expenses" && <Expenses x={x} s={s} items={exp.data} status={billStatus.data ?? {}} />}
         {tab === "payments" && <Payments x={x} s={s} items={pay.data} onChanged={reloadAll} />}
         {tab === "people" && <People x={x} s={s} onChanged={reloadAll} />}
       </ScrollView>
@@ -104,8 +107,8 @@ export default function CircleScreen() {
 type Ctx = { t: (k: string, p?: Record<string, string | number>) => string; lang: string; id: string; cur: string; c: Summary["circle"]; admin: boolean; me: Summary["members"][number] | undefined };
 
 // ---------------------------------------------------------------- Overview
-function Overview({ x, s, access, acts, myBal, showWelcome, closeWelcome, goTab, pendingCount }: {
-  x: Ctx; s: Summary; access: AiAccess | null; acts: Activity[]; myBal: number; showWelcome: boolean; closeWelcome: () => void; goTab: (t: Tab) => void; pendingCount: number;
+function Overview({ x, s, access, trail, acts, myBal, showWelcome, closeWelcome, goTab, pendingCount }: {
+  x: Ctx; s: Summary; access: AiAccess | null; trail: Trail | null; acts: Activity[]; myBal: number; showWelcome: boolean; closeWelcome: () => void; goTab: (t: Tab) => void; pendingCount: number;
 }) {
   const { t, lang, id, cur, c, admin, me } = x;
   const cats = s.categories.slice(0, 6);
@@ -135,6 +138,29 @@ function Overview({ x, s, access, acts, myBal, showWelcome, closeWelcome, goTab,
         </Text>
         {me ? <Text style={[T.tiny, { color: C.ink3 }]}>{t("your_share_pct", { pct: Number(me.share).toFixed(Number(me.share) % 1 ? 1 : 0) })} · {t("charged_paid", { charged: money(me.charged, cur, lang), paid: money(me.credited, cur, lang) })}</Text> : null}
       </Card>
+
+      {trail && (trail.holders.length || trail.bills.length) ? (() => {
+        const held = trail.holders.filter((h) => h.kind === "person");
+        const issues = trail.checks.filter((c) => c.severity === "high" || c.severity === "medium").length;
+        return (
+          <Card onPress={() => router.push({ pathname: "/circle/[id]/trail", params: { id } })}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
+              <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: C.primarySoft, alignItems: "center", justifyContent: "center" }}>
+                <Icon name="git-network-outline" size={20} color={C.primary} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[T.h3, { color: C.ink }]}>{t("tr_title")}</Text>
+                {held.map((h) => <Text key={h.payee_id} style={[T.small, { color: C.ink2 }]} numberOfLines={1}>{t("tr_card_held", { name: h.name, amount: money(h.balance, cur, lang) })}</Text>)}
+                <Text style={[T.small, { color: trail.totals.unpaid_count ? C.owe : C.ok }]} numberOfLines={2}>
+                  {trail.totals.unpaid_count ? t("tr_card_unpaid", { n: trail.totals.unpaid_count, amount: money(trail.totals.bills_unpaid, cur, lang) }) : t("tr_card_all_paid")}
+                  {issues ? ` · ${t("tr_card_issues", { n: issues })}` : ""}
+                </Text>
+              </View>
+              <Icon name="chevron-forward" size={20} color={C.ink3} />
+            </View>
+          </Card>
+        );
+      })() : null}
 
       <View style={{ flexDirection: "row", gap: S.sm }}>
         <Tool icon="bar-chart-outline" label={t("ins_title")} sub={t("tool_insights_sub")} onPress={() => router.push({ pathname: "/circle/[id]/insights", params: { id } })} />
@@ -179,7 +205,7 @@ function Overview({ x, s, access, acts, myBal, showWelcome, closeWelcome, goTab,
         </View>
         {s.payees.length ? (
           <View style={{ backgroundColor: C.bg, borderRadius: R.sm, padding: S.md, gap: 2 }}>
-            <Text style={[T.small, { color: C.ink2, fontWeight: "700" }]}>{t("held_by", { name: s.payees[0].name })}</Text>
+            <Text style={[T.small, { color: C.ink2, fontWeight: "700" }]}>{t("pot_label", { name: s.payees[0].name })}</Text>
             <Text style={[T.h3, { color: Number(s.totals.pot) < 0 ? C.owe : C.ink }]}>{money(s.totals.pot, cur, lang)}</Text>
             <Text style={[T.tiny, { color: C.ink3 }]}>{Number(s.totals.pot) < 0 ? t("pot_negative") : t("pot_positive")}</Text>
           </View>
@@ -209,7 +235,7 @@ function Overview({ x, s, access, acts, myBal, showWelcome, closeWelcome, goTab,
         <Card style={{ paddingVertical: 4 }}>
           {acts.length === 0 ? <Text style={[T.small, { color: C.ink3, paddingVertical: S.md }]}>{t("no_activity")}</Text> : acts.map((a, i) => (
             <Row key={a.id} last={i === acts.length - 1}
-              left={<Icon name={a.verb.startsWith("expense") ? "receipt-outline" : a.verb.startsWith("payment") || a.verb.startsWith("reimb") ? "cash-outline" : "people-outline"} size={20} color={C.ink2} />}
+              left={<Icon name={a.verb.startsWith("expense") ? "receipt-outline" : a.verb.startsWith("payout") ? "arrow-up-circle-outline" : a.verb.startsWith("payment") || a.verb.startsWith("reimb") ? "cash-outline" : "people-outline"} size={20} color={C.ink2} />}
               title={activityText(x, a)} subtitle={dateLabel(a.created_at, lang)} />
           ))}
         </Card>
@@ -222,11 +248,11 @@ function activityText(x: Ctx, a: Activity) {
   const { t, lang, id, cur, c, admin, me } = x;
   const d = a.data ?? {};
   const amount = d.amount != null ? money(d.amount, cur, lang) : "";
-  return t("act_" + a.verb, { title: d.title ?? "", amount, member: d.member ?? "", from: d.from != null ? Number(d.from).toFixed(0) : "", to: d.to != null ? Number(d.to).toFixed(0) : "", note: d.note ?? "", version: d.version ?? "" });
+  return t("act_" + a.verb, { vendor: d.vendor || t("tr_a_provider"), payee: d.payee ?? "", question: d.question ?? "", title: d.title ?? "", amount, member: d.member ?? "", from: d.from != null ? Number(d.from).toFixed(0) : "", to: d.to != null ? Number(d.to).toFixed(0) : "", note: d.note ?? "", version: d.version ?? "" });
 }
 
 // ---------------------------------------------------------------- Expenses
-function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null }) {
+function Expenses({ x, s, items, status }: { x: Ctx; s: Summary; items: Expense[] | null; status: Record<string, BillStatus> }) {
   const { t, lang, id, cur, c, admin, me } = x;
   const checks = useLoad(() => loadCircleChecks(id), [id]);
   const [progress, setProgress] = useState<{ i: number; n: number } | null>(null);
@@ -277,6 +303,9 @@ function Expenses({ x, s, items }: { x: Ctx; s: Summary; items: Expense[] | null
                   <Text style={[T.body, { color: C.ink, fontWeight: "700" }]}>{money(e.amount, cur, lang)}</Text>
                   {(() => { const r = openRisk(checks.data?.[e.id]); const n = openFlags(checks.data?.[e.id]).length;
                     return r === "high" || r === "medium" ? <Pill tone={r === "high" ? "owe" : "pending"} text={`⚠ ${n}`} /> : null; })()}
+                  {(() => { const b = status[e.id]; if (!b || b.status === "member_paid") return null;
+                    return b.status === "unpaid" ? <Text style={[T.tiny, { color: C.ink3 }]}>{t("bs_unpaid_short")}</Text>
+                      : <Pill tone={b.questioned ? "owe" : BILL_TONE[b.status]} text={b.questioned ? t("tr_st_questioned") : t("bs_" + b.status + "_short")} />; })()}
                   {e.saath_receipts?.length ? <Icon name="attach" size={16} color={C.ink3} /> : <Text style={[T.tiny, { color: C.accent }]}>{t("no_receipt")}</Text>}
                 </View>} />
             ))}
