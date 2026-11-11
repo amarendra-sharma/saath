@@ -968,5 +968,7 @@ export const en = {
   err_question_required: "Write a short question.",
   err_bad_date: "That date isn't valid.",
   pot_label: "Sent to {name}, minus bills recorded",
+  how_to_use: "How to use Saath",
+  see_how_it_works: "See how Saath works",
 };
 export type StringKey = keyof typeof en;

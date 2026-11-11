@@ -634,4 +634,6 @@ export const fr: Partial<Record<StringKey, string>> = {
   err_question_required: "Écrivez une courte question.",
   err_bad_date: "Cette date n'est pas valide.",
   pot_label: "Envoyé à {name}, moins les factures enregistrées",
+  how_to_use: "Comment utiliser Saath",
+  see_how_it_works: "Découvrir comment fonctionne Saath",
 };

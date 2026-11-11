@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saath user guide</title>
+<meta name="description" content="How to use Saath: circles, shares, bills, paying your share, the money trail, Bill Check, reminders, insights, agreements and Saath Plus.">
+<meta name="theme-color" content="#1A3A6E">
+<link rel="icon" href="/img/saath-icon-64.png">
+<!--
+  KEEP THIS GUIDE CURRENT. Whenever a Saath feature changes:
+   1. update the section(s) below that describe it (each <section id> matches a screen or feature);
+   2. add a line at the top of "What's new" (newest first) and bump GUIDE_UPDATED;
+   3. if a screen gets a new name or button label, use the exact words the app shows.
+  The in-app links (Profile → How to use Saath, the welcome screen) point to /guide.html and to
+  /guide.html#<section id>, so keep the ids stable.
+-->
+<style>
+  :root { --bg:#F4F6FA; --card:#FFFFFF; --ink:#0E1A2B; --ink2:#44526A; --ink3:#63708A; --line:#E2E7EF;
+          --navy:#1A3A6E; --navy2:#112850; --soft:#E8EEF8; --gold:#C99A3E; --gold2:#8F6316; --goldsoft:#F8EFDD; --ok:#0E7A48; --oksoft:#E3F4EA; --owe:#B42318; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; scroll-padding-top:76px; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif; }
+  a { color:var(--navy); }
+  :focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+  .skip { position:absolute; left:-999px; top:8px; background:#fff; padding:8px 12px; border-radius:8px; z-index:10; }
+  .skip:focus { left:8px; }
+  nav.top { position:sticky; top:0; z-index:5; background:rgba(244,246,250,.94); backdrop-filter:saturate(1.4) blur(8px); border-bottom:1px solid var(--line); }
+  nav.top .wrap { max-width:1180px; margin:0 auto; padding:0 20px; display:flex; align-items:center; gap:16px; height:62px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:19px; color:var(--ink); text-decoration:none; }
+  .brand img { width:30px; height:30px; border-radius:8px; }
+  nav.top .links { margin-left:auto; display:flex; gap:16px; align-items:center; }
+  nav.top .links a { color:var(--ink2); text-decoration:none; font-weight:600; font-size:15px; }
+  .btn { display:inline-flex; align-items:center; padding:9px 14px; border-radius:10px; font-weight:700; text-decoration:none; font-size:14px; background:var(--navy); color:#fff !important; }
+
+  .layout { max-width:1180px; margin:0 auto; padding:24px 20px 80px; display:grid; grid-template-columns:250px 1fr; gap:32px; }
+  aside.toc { position:sticky; top:82px; align-self:start; max-height:calc(100vh - 100px); overflow:auto; font-size:14.5px; }
+  aside.toc .t { font-weight:800; color:var(--ink3); text-transform:uppercase; letter-spacing:.5px; font-size:12px; margin:0 0 8px; }
+  aside.toc ol { list-style:none; margin:0; padding:0; }
+  aside.toc a { display:block; padding:5px 10px; border-radius:8px; color:var(--ink2); text-decoration:none; }
+  aside.toc a:hover, aside.toc a.on { background:var(--soft); color:var(--navy); font-weight:600; }
+  @media (max-width:880px) { .layout { grid-template-columns:1fr; } aside.toc { position:static; max-height:none; } aside.toc ol { columns:2; } }
+
+  .intro { background:linear-gradient(160deg,var(--navy2),var(--navy)); color:#fff; border-radius:20px; padding:28px; }
+  .intro h1 { margin:0 0 6px; font-size:32px; letter-spacing:-.5px; }
+  .intro p { margin:0; color:rgba(255,255,255,.88); }
+  .intro .meta { margin-top:12px; font-size:13px; color:rgba(255,255,255,.7); }
+  .search { margin:18px 0 0; }
+  .search input { width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--line); font-size:16px; background:#fff; }
+  main section { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px 24px; margin:18px 0; }
+  main section.hidden { display:none; }
+  h2 { margin:0 0 10px; font-size:23px; letter-spacing:-.3px; }
+  h2 .n { color:var(--gold2); font-weight:800; margin-right:6px; }
+  h3 { margin:20px 0 6px; font-size:17px; }
+  p, li { color:var(--ink2); }
+  strong { color:var(--ink); }
+  ol.steps { padding-left:22px; }
+  ol.steps li { margin:6px 0; }
+  .ui { background:var(--soft); color:var(--navy); font-weight:700; padding:1px 7px; border-radius:6px; white-space:nowrap; font-size:.94em; }
+  .tip, .note, .warn { border-radius:12px; padding:12px 14px; margin:14px 0; font-size:15px; }
+  .tip { background:var(--oksoft); color:#0B4D2E; }
+  .note { background:var(--soft); color:var(--navy2); }
+  .warn { background:var(--goldsoft); color:#5C3F08; }
+  .tip b, .note b, .warn b { color:inherit; }
+  table { width:100%; border-collapse:collapse; font-size:15px; margin:10px 0; }
+  th, td { text-align:left; padding:8px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--ink); background:var(--bg); }
+  .new { list-style:none; padding:0; margin:0; }
+  .new li { padding:8px 0; border-bottom:1px solid var(--line); }
+  .new li:last-child { border-bottom:0; }
+  .new time { font-weight:700; color:var(--ink); margin-right:6px; }
+  footer { max-width:1180px; margin:0 auto; padding:0 20px 50px; color:var(--ink3); font-size:14px; }
+  footer a { color:var(--ink2); font-weight:600; margin-right:18px; text-decoration:none; }
+  @media print { nav.top, aside.toc, .search, footer { display:none; } .layout { display:block; } main section { break-inside:avoid; border:0; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="top" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="/about.html"><img src="/img/saath-icon.png" alt=""> Saath guide</a>
+    <div class="links"><a href="/about.html">About</a><a class="btn" href="/">Open Saath</a></div>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="toc" aria-label="Contents">
+    <p class="t">Contents</p>
+    <ol id="tocList"></ol>
+  </aside>
+
+  <main id="main">
+    <div class="intro">
+      <h1>How to use Saath</h1>
+      <p>Saath helps a group share costs over weeks, months or years. This guide follows the app screen by screen, in the order you'll meet them.</p>
+      <p class="meta">Guide updated <span id="guideUpdated">11 November 2026</span> · matches the current app · <a href="#whats-new" style="color:#FFD98A">What's new</a></p>
+    </div>
+    <div class="search"><label for="q" class="sr" style="position:absolute;left:-999px">Search the guide</label>
+      <input id="q" type="search" placeholder="Search the guide, e.g. UPI, verify, reminder, delete…" autocomplete="off"></div>
+
+    <section id="whats-new" data-title="What's new">
+      <h2>What's new</h2>
+      <ul class="new">
+        <li><time>11 Nov 2026</time><b>Money trail.</b> The person who receives the group's money records each payment to a hospital or shop, with the receipt, and another member verifies it. Every bill now shows whether it has been paid. See <a href="#money-trail">Money trail</a>.</li>
+        <li><time>8 Nov 2026</time><b>QR codes and better payment links.</b> UPI, Pix and SEPA QR codes on the Pay screen, links to Wise, Remitly and Western Union for paying from abroad, and an <span class="ui">Add payment details</span> button for organisers. See <a href="#pay">Paying your share</a>.</li>
+        <li><time>7 Nov 2026</time><b>Insights, circle agreements, Saath Plus and 12 kinds of circle</b> (trips, events, projects, clubs, fundraisers and more).</li>
+        <li><time>6 Nov 2026</time><b>New look</b> and an admin console for the Saath team.</li>
+      </ul>
+    </section>
+
+    <section id="start" data-title="Getting started">
+      <h2><span class="n">1</span>Getting started</h2>
+      <p>Saath works in any web browser at <a href="/">saath.macronations.com</a>, on a phone or a computer.</p>
+      <ol class="steps">
+        <li>Open Saath and choose <span class="ui">Create account</span>. Enter your name, email and a password. If you already use a MacroNations course, your MacroNations sign-in works here too.</li>
+        <li>Pick your language. You can change it any time in <span class="ui">Profile</span>.</li>
+        <li>On the home screen, choose <span class="ui">Create a circle</span> to start one, or <span class="ui">Join</span> if someone sent you an invite code.</li>
+      </ol>
+      <div class="note"><b>A circle</b> is one shared budget: one group of people, one currency, one set of bills. You can be in as many circles as you like.</div>
+    </section>
+
+    <section id="create-circle" data-title="Create a circle">
+      <h2><span class="n">2</span>Create a circle</h2>
+      <p>The organiser sets the circle up in three short steps.</p>
+      <ol class="steps">
+        <li><b>What it's for.</b> Give it a name (for example "Papa's care" or "Goa trip") and pick a purpose: medical care, elder care, education, household, trip, event, project, club or community, fundraiser, funeral or memorial, pets, or other. The purpose decides which bill categories you'll see. Choose the currency and, if you like, the city.</li>
+        <li><b>How costs are shared.</b>
+          <ul>
+            <li><span class="ui">Split each bill</span>: every bill you add is divided by each person's percentage. Best when costs vary.</li>
+            <li><span class="ui">Fixed amount each period</span>: a regular amount (for example ₹60,000 a month for a nurse) that each person pays their percentage of every period. Bills are still recorded so everyone can see them, but they don't change what anyone owes.</li>
+          </ul></li>
+        <li><b>When to settle.</b> Choose weekly, every 2 weeks, monthly or quarterly, and the due day. Turn on <span class="ui">Organiser confirms payments</span> if a payment should count only once the organiser confirms the money arrived.</li>
+      </ol>
+      <div class="tip"><b>Tip:</b> you can change the period, due day and split style later in <span class="ui">Settings</span>. Changes apply to new bills and periods from then on.</div>
+    </section>
+
+    <section id="invite" data-title="Invite people and set shares">
+      <h2><span class="n">3</span>Invite people and set shares</h2>
+      <h3>Inviting</h3>
+      <ol class="steps">
+        <li>In the circle, open <span class="ui">People</span> and choose <span class="ui">Invite family</span>. Send the message on WhatsApp or anywhere else. It contains a 7-letter invite code.</li>
+        <li>The other person opens Saath, chooses <span class="ui">Join</span> and enters the code. If you already added them by name, they pick their name so they keep their share and history.</li>
+      </ol>
+      <p>You can also add people who will never install the app (for example an older relative). Add their phone number or email and they still get reminders.</p>
+      <h3>Shares</h3>
+      <p>Open <span class="ui">Shares</span> and set each person's percentage. They can be anything the group agrees on and don't have to be equal; <span class="ui">Split equally</span> sets equal shares in one tap. The total must be 100%. Saath warns you if it isn't.</p>
+      <div class="note">New shares apply to bills added from then on. Past bills keep the split they had.</div>
+    </section>
+
+    <section id="receiver" data-title="Who receives the money">
+      <h2><span class="n">4</span>Who receives the money</h2>
+      <p>Tell Saath who collects the money and how people can pay them. This is usually one family member who pays the hospital, or the hospital itself.</p>
+      <ol class="steps">
+        <li>Open <span class="ui">Settings</span> → <span class="ui">Who receives the money</span>, or tap <span class="ui">Add payment details</span> on the Pay screen.</li>
+        <li>Add the receiver. If they are a member, <b>link the member who actually uses Saath</b> (shown with a phone icon). Only then can they record what they pay out in the <a href="#money-trail">Money trail</a>.</li>
+        <li>Add one or more payment methods: UPI ID, Indian or international bank account, Wise, PayPal, Revolut, Zelle, Venmo, Cash App, SEPA (IBAN), M-Pesa, Pix, Remitly or cash.</li>
+      </ol>
+      <div class="warn"><b>UPI IDs</b> look like <code>name@bank</code> (for example 98xxxxxx10@ybl). Without the part after @, payment apps can't open it, so Saath warns you.</div>
+      <p>If a hospital or provider should be paid directly, add it as a separate receiver. Money paid straight to the hospital never sits with one person.</p>
+    </section>
+
+    <section id="bills" data-title="Adding bills">
+      <h2><span class="n">5</span>Adding bills</h2>
+      <ol class="steps">
+        <li>In the circle, tap <span class="ui">Add a bill</span>.</li>
+        <li><b>Read it with AI (optional):</b> take a photo or choose a PDF, and Saath fills in the amount, date, seller and category for you to check. A multi-page PDF with several bills is split into separate bills. See <a href="#plus">Saath Plus</a>.</li>
+        <li><b>Or type it in:</b> title, amount, date, category and seller.</li>
+        <li>Attach the receipt (photo or PDF). Bills without a receipt are marked so the group can see what's missing.</li>
+        <li>Under <span class="ui">Who paid?</span>, leave the receiver selected if the bill is paid from the group's money. If you paid it <b>from your own pocket</b>, choose <span class="ui">I paid</span> (or the member who did): they are credited automatically and the others owe them their part.</li>
+        <li>To split one bill differently (for example one person covers it alone), use <span class="ui">Split this bill differently</span>. The split must add up to 100%.</li>
+      </ol>
+      <div class="tip"><b>Always check AI readings.</b> Saath highlights anything it wasn't sure about. Amounts are never guessed: an unreadable amount is left blank for you to fill in.</div>
+      <p>Each bill in the list shows whether it has been paid to the provider: <span class="ui">Paid ✓</span> (verified), <span class="ui">Paid</span>, <span class="ui">Part paid</span> or <i>Not marked paid</i>.</p>
+    </section>
+
+    <section id="pay" data-title="Paying your share">
+      <h2><span class="n">6</span>Paying your share</h2>
+      <p>Your balance is at the top of the circle. Red means you owe money; green means you're ahead.</p>
+      <ol class="steps">
+        <li>Tap <span class="ui">Pay my share</span>. The amount due is filled in; you can change it.</li>
+        <li>Pick one of the receiver's payment methods:
+          <ul>
+            <li><b>On a phone:</b> <span class="ui">Open UPI</span>, <span class="ui">Open Wise</span>, <span class="ui">Open PayPal</span> and so on open your own app with the details filled in.</li>
+            <li><b>On a computer, or paying from someone else's phone:</b> <span class="ui">Show QR code</span> and scan it with any UPI app (or your bank's app for SEPA and Pix). The amount is in the code.</li>
+            <li><b>Zelle, M-Pesa and bank transfers</b> have no link; Saath shows the steps and <span class="ui">Copy details</span> copies everything you need.</li>
+            <li><b>Paying from another country?</b> Saath offers Wise, Remitly and Western Union, which send money to an Indian bank account or UPI ID for much less than a bank wire.</li>
+          </ul></li>
+        <li>After paying, come back to Saath and record it: the amount, the date, the transaction or UTR number and, ideally, a screenshot.</li>
+      </ol>
+      <p>If the circle uses <b>Organiser confirms payments</b>, your payment shows as waiting until the organiser taps <span class="ui">Received</span>.</p>
+      <div class="note"><b>Saath never holds or moves money.</b> It only opens your payment app and keeps the record.</div>
+    </section>
+
+    <section id="money-trail" data-title="Money trail">
+      <h2><span class="n">7</span>Money trail: proof that bills were paid</h2>
+      <p>When members send money to one person, the group needs to know that person then paid the hospital, pharmacy or nurse. The Money trail shows this. Open it from the card on the circle's front page.</p>
+      <h3>What it shows</h3>
+      <ul>
+        <li><b>Still with [name]:</b> what the receiver has received, minus what they've paid to providers and paid back to members.</li>
+        <li><b>Bills paid / Not marked paid:</b> how much of the billed amount has a recorded payment.</li>
+        <li><b>Needs attention:</b> bills unpaid for more than 7 days, payments with no proof, payments waiting for verification, questioned payments, and money held while bills wait.</li>
+        <li>Three tabs: <span class="ui">Unpaid bills</span>, <span class="ui">Payments out</span> and the <span class="ui">Ledger</span> (every amount in and out with a running balance, downloadable as a PDF statement).</li>
+      </ul>
+      <h3>For the receiver: record a payment to a provider</h3>
+      <ol class="steps">
+        <li>Tap <span class="ui">Mark paid</span> on a bill, or <span class="ui">Record a payment to a provider</span>.</li>
+        <li>Tick the bills this payment covers. One payment can cover several bills or part of one; anything extra is recorded as an advance or deposit.</li>
+        <li>Enter who you paid, the date, how you paid, the transaction or receipt number, and <b>attach the proof</b> (the hospital's receipt, a UPI screenshot or a bank slip).</li>
+        <li>Save. The bills now show as paid, waiting to be verified.</li>
+      </ol>
+      <h3>For everyone else: verify or question</h3>
+      <ul>
+        <li>Open <span class="ui">Payments out</span>, tap <span class="ui">See proof</span>, and if it matches (same amount, provider and date) tap <span class="ui">Verify</span>.</li>
+        <li>If something looks wrong, tap <span class="ui">Question it</span> and say why. Everyone sees the question; the receiver can reply and add proof. Once you're satisfied, verify it or withdraw your question.</li>
+      </ul>
+      <h3>The rules</h3>
+      <table>
+        <tr><th>Rule</th><th>Why</th></tr>
+        <tr><td>Only the receiver or an organiser can record a payment out.</td><td>It's their money to account for.</td></tr>
+        <tr><td>Someone else must verify it; you can never verify your own.</td><td>A second pair of eyes on every payment.</td></tr>
+        <tr><td>A verified payment is locked. It can still be questioned later.</td><td>Records can't quietly change.</td></tr>
+        <tr><td>A bill can't be marked paid for more than its amount, and a paid bill can't be deleted or reduced.</td><td>No double counting.</td></tr>
+        <tr><td>Every step, including deletions, goes in the activity log.</td><td>Nothing disappears.</td></tr>
+      </table>
+      <div class="note">No app can prove a hospital received money beyond its receipt. That's why each payment needs proof and a second person. For large bills, consider paying the hospital directly (see <a href="#receiver">Who receives the money</a>).</div>
+    </section>
+
+    <section id="bill-check" data-title="Bill Check">
+      <h2><span class="n">8</span>Bill Check</h2>
+      <p>Bill Check looks for signs a bill is wrong, inflated or altered. It runs on its own when a bill is added, and you can run it again with <span class="ui">Check this bill</span>.</p>
+      <p><b>Free checks</b> look at the totals, duplicate bill numbers, the same file uploaded twice, dates, prices above the printed MRP, expired medicines, the GST number, and whether the patient name matches other bills. <b>With AI</b> (<a href="#plus">Saath Plus</a>) it also reads every line, looks for edited digits or pasted-in sections, and compares prices with what others pay locally and online.</p>
+      <div class="tip">Bill Check gives <b>warnings to look at, not accusations</b>. Many have innocent explanations. Talk to the provider, and dismiss a warning once it's explained.</div>
+    </section>
+
+    <section id="reminders" data-title="Reminders">
+      <h2><span class="n">9</span>Reminders</h2>
+      <p>Each period, Saath reminds everyone who owes money on WhatsApp and by email, in each person's chosen language. The circle shows when the next reminder goes out.</p>
+      <ul>
+        <li>An organiser can send reminders now from the circle, or nudge one person on WhatsApp with <span class="ui">Remind on WhatsApp</span>.</li>
+        <li>Each person's reminder language and channels are set on their page under <span class="ui">People</span>.</li>
+        <li><span class="ui">Settings</span> → <span class="ui">Reminder log</span> shows what was sent and anything that couldn't be (for example a missing number).</li>
+      </ul>
+    </section>
+
+    <section id="insights" data-title="Insights">
+      <h2><span class="n">10</span>Insights</h2>
+      <p>Open <span class="ui">Insights</span> from the circle's front page to see:</p>
+      <ul>
+        <li>this month, last month and the 3-month average;</li>
+        <li>a chart of the last 12 months, money spent against money paid in;</li>
+        <li>where the money goes, by category, all time or the last 90 days;</li>
+        <li><b>who has paid what</b> compared with the share each person agreed;</li>
+        <li>top sellers and providers, the largest bills, and record health (receipts attached, open Bill Check warnings, payments waiting).</li>
+      </ul>
+      <p>Use the download button to export it as a spreadsheet (CSV).</p>
+    </section>
+
+    <section id="agreement" data-title="Circle agreement">
+      <h2><span class="n">11</span>Circle agreement</h2>
+      <p>A short written agreement that everyone signs in the app. It avoids misunderstandings, especially when costs run for months.</p>
+      <ol class="steps">
+        <li>The organiser opens <span class="ui">Agreement</span> → <span class="ui">Write the agreement</span>. The text is built from the circle's settings: purpose, shares, period and due day.</li>
+        <li>Add your rules: the amount above which a cost is discussed first, when a late payer is reminded, the notice needed to leave, a trusted person to ask if you disagree, and any other terms.</li>
+        <li>Publish it. Each member reads it, types their full name, ticks <span class="ui">I agree</span> and signs.</li>
+        <li>Download the PDF any time. It lists every signature with its time and a fingerprint of the exact text.</li>
+      </ol>
+      <p>Changing the agreement publishes a new version, and everyone signs again.</p>
+      <div class="note">This is a written record of what your group agreed, accepted electronically. It isn't legal advice; for large sums, ask a lawyer to review it.</div>
+    </section>
+
+    <section id="statements" data-title="Statements and exports">
+      <h2><span class="n">12</span>Statements and exports</h2>
+      <p>The statement button at the top of the circle makes a statement for any date range, with bills, payments and each person's balance, as a <b>PDF</b> or a <b>spreadsheet (CSV)</b>. It's useful for insurance claims, tax records or a family meeting. The receiver's money statement is in the <a href="#money-trail">Money trail</a> → <span class="ui">Ledger</span>.</p>
+    </section>
+
+    <section id="plus" data-title="Saath Plus and AI">
+      <h2><span class="n">13</span>Saath Plus and AI</h2>
+      <p>Everything in this guide is free except AI bill reading and the AI parts of Bill Check, which are Saath Plus. One Plus plan covers the <b>whole circle</b>, not each person.</p>
+      <ul>
+        <li><b>Right now</b>, AI is free for every circle during early access.</li>
+        <li>When paid plans start, each circle gets <b>10 free AI reads</b> to try it. After that, bills can still be typed in by hand.</li>
+        <li>Prices depend on your country: for example ₹149 a month or ₹999 a year in India, $3.99 a month in the US, with a 90-day pass for a hospital stay or an event.</li>
+        <li>To get Plus, open <span class="ui">Saath Plus</span> in the circle and tap <span class="ui">Request Plus</span>; the Saath team will contact you about payment.</li>
+      </ul>
+    </section>
+
+    <section id="organisers" data-title="Organiser settings">
+      <h2><span class="n">14</span>Organiser settings</h2>
+      <ul>
+        <li><b>Settings:</b> name, purpose, currency, period, due day, split style, payment confirmation, reminders.</li>
+        <li><b>People:</b> add or remove members, make someone an organiser, set their reminder language and channels.</li>
+        <li><b>Archive circle:</b> stops reminders but keeps every record available to everyone.</li>
+      </ul>
+    </section>
+
+    <section id="account" data-title="Your account and privacy">
+      <h2><span class="n">15</span>Your account and privacy</h2>
+      <ul>
+        <li>Change your name, phone, language and notifications in <span class="ui">Profile</span>.</li>
+        <li><span class="ui">Delete my account</span> removes your login and personal details. Bills and payments you added stay in your circles, shown as "Former member", so the family's records still add up.</li>
+        <li>Bills, receipts and payments are visible only to members of that circle. Saath has no ads and never sells data. Read the full <a href="/privacy.html">privacy policy</a>.</li>
+      </ul>
+    </section>
+
+    <section id="help" data-title="Troubleshooting">
+      <h2><span class="n">16</span>Troubleshooting</h2>
+      <table>
+        <tr><th>What you see</th><th>What to do</th></tr>
+        <tr><td>Nothing happens when I tap "Open UPI" on my computer.</td><td>Computers have no UPI app. Use <span class="ui">Show QR code</span> and scan it with your phone.</td></tr>
+        <tr><td>"No payment methods added yet" on the Pay screen.</td><td>The organiser needs to add the receiver's payment details: <span class="ui">Add payment details</span>.</td></tr>
+        <tr><td>The receiver can't record payments to providers.</td><td>In <span class="ui">Who receives the money</span>, link the receiver to the member who uses Saath (phone icon).</td></tr>
+        <tr><td>A bill can't be deleted.</td><td>It has a recorded payment. Delete that payment record in the Money trail first (only possible before it is verified).</td></tr>
+        <tr><td>I can't verify a payment.</td><td>You recorded it, or the money was yours to pay from. Someone else in the circle has to verify it.</td></tr>
+        <tr><td>AI reading says it's paused or the limit is reached.</td><td>Type the bill in by hand; AI resumes the next day or next month. Basic Bill Check still runs.</td></tr>
+        <tr><td>Shares don't add up to 100%.</td><td>Open <span class="ui">Shares</span> and fix them, or use <span class="ui">Split equally</span>.</td></tr>
+      </table>
+      <p>Still stuck? Email <a href="mailto:support@macronations.com">support@macronations.com</a>.</p>
+    </section>
+  </main>
+</div>
+<footer><a href="/about.html">About Saath</a><a href="/privacy.html">Privacy</a><a href="mailto:support@macronations.com">Contact</a><span>© 2026 MacroNations LLC</span></footer>
+<script>
+  // contents list, highlight while scrolling, and a simple search over sections
+  (function () {
+    var secs = [].slice.call(document.querySelectorAll("main section[id]"));
+    var list = document.getElementById("tocList");
+    secs.forEach(function (s) {
+      var li = document.createElement("li"), a = document.createElement("a");
+      a.href = "#" + s.id; a.textContent = s.getAttribute("data-title") || s.id; li.appendChild(a); list.appendChild(li);
+    });
+    var links = [].slice.call(list.querySelectorAll("a"));
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id); }); });
+      }, { rootMargin: "-20% 0px -70% 0px" });
+      secs.forEach(function (s) { io.observe(s); });
+    }
+    var q = document.getElementById("q");
+    q.addEventListener("input", function () {
+      var v = q.value.trim().toLowerCase();
+      secs.forEach(function (s) { s.classList.toggle("hidden", !!v && s.textContent.toLowerCase().indexOf(v) === -1); });
+    });
+  })();
+</script>
+<script src="/saath-track.js" defer></script>
+</body>
+</html>

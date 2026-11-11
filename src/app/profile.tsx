@@ -6,6 +6,7 @@ import { Button, Card, Chips, Field, Screen, Section, Toggle } from "../componen
 import { confirm, notify, useApp } from "../lib/app";
 import { LANGS, LangCode } from "../lib/strings";
 import { openUrl } from "../lib/share";
+import { guideUrl } from "../lib/visits";
 import { callFn, errText, supabase } from "../lib/supabase";
 import { C, S, T } from "../lib/theme";
 
@@ -67,6 +68,7 @@ export default function Profile() {
       </Section>
       <View style={{ gap: S.sm }}>
         {isAdmin ? <Button kind="secondary" icon="shield-half-outline" label={t("admin_console")} onPress={() => router.push("/admin")} /> : null}
+        <Button kind="secondary" icon="book-outline" label={t("how_to_use")} onPress={() => openUrl(guideUrl())} />
         <Button kind="ghost" icon="shield-checkmark-outline" label={t("privacy_policy")} onPress={() => openUrl((Constants.expoConfig?.extra as any)?.privacyUrl)} />
         <Button kind="secondary" icon="log-out-outline" label={t("sign_out")} onPress={signOut} />
         <Button kind="danger" icon="trash-outline" label={t("delete_account")} onPress={del} />

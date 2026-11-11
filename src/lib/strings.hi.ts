@@ -970,4 +970,6 @@ export const hi: Partial<Record<StringKey, string>> = {
   err_question_required: "छोटा सा सवाल लिखें।",
   err_bad_date: "यह तारीख़ सही नहीं है।",
   pot_label: "{name} को भेजा, दर्ज बिल घटाकर",
+  how_to_use: "साथ कैसे इस्तेमाल करें",
+  see_how_it_works: "देखें साथ कैसे काम करता है",
 };

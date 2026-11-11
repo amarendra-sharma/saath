@@ -61,7 +61,9 @@
     "extra": {
       "supabaseUrl": "https://qgelvmefyexyzpwqupev.supabase.co",
       "supabaseKey": "sb_publishable_fiT8iohvTZFUZ7vTlYpOvQ_9NPLPcIa",
-      "privacyUrl": "https://saath.macronations.com/privacy.html"
+      "privacyUrl": "https://saath.macronations.com/privacy.html",
+      "guideUrl": "https://saath.macronations.com/guide.html",
+      "aboutUrl": "https://saath.macronations.com/about.html"
     },
     "description": "Share the cost of caring for someone \u2014 bills, receipts, percentage splits and reminders for families."
   }

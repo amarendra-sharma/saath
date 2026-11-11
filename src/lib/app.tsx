@@ -6,6 +6,7 @@ import { Alert, Platform } from "react-native";
 import { STRINGS, LangCode, LANGS } from "./strings";
 import { supabase } from "./supabase";
 import { appFlags, isAdmin as fetchIsAdmin } from "./admin";
+import { attributeSignup, trackAppVisit } from "./visits";
 import { setBillCheckPaid } from "./billcheck";
 
 export type Profile = {
@@ -57,6 +58,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const { data, error } = await supabase.rpc("saath_ensure_profile");
     if (!error && data) {
       setProfile(data as Profile);
+      attributeSignup(s.session.user.id);   // web: credit a new user to the link that brought them
       if ((data as Profile).language && STRINGS[(data as Profile).language as LangCode]) {
         setLangState((data as Profile).language as LangCode);
         AsyncStorage.setItem("saath-lang", (data as Profile).language).catch(() => {});
@@ -65,6 +67,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    trackAppVisit();   // web only, once per browser session
     (async () => {
       let stored: string | null = null;
       try { stored = await AsyncStorage.getItem("saath-lang"); } catch {}

@@ -55,6 +55,13 @@ export async function adminPricing(): Promise<PriceRow[]> {
 export const adminSetPrice = (r: PriceRow) => rpc<void>("saath_admin_set_price", {
   p_country: r.country, p_tier: r.tier, p_currency: r.currency, p_monthly: r.monthly, p_yearly: r.yearly, p_pass90: r.pass90, p_allowance: r.ai_allowance_usd,
 });
+export type Traffic = {
+  by_source: { source: string; visits_30d: number; visitors_30d: number; visits_all: number; signups_30d: number; signups_all: number }[];
+  pages_30d: { page: string; visits: number }[];
+  daily: { day: string; visits: number; from_macronations: number }[];
+  signups_total: number; signups_30d: number;
+};
+export const adminTraffic = () => rpc<Traffic>("saath_admin_traffic");
 export const PERIOD_MONTHS = { month: 1, year: 12, pass90: 3 } as const;
 
 export const usd = (n: number | null | undefined, d = 2) => `$${Number(n ?? 0).toFixed(d)}`;

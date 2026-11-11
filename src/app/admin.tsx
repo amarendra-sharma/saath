@@ -4,7 +4,7 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import { Avatar, Banner, Button, Card, Chips, Empty, Field, Icon, Loading, Pill, Row, Screen, Section, Segmented, Sheet, Toggle, hashTone } from "../components/ui";
 import {
   AdminCircle, AdminOverview, AdminRequest, AdminUser, ConfigRow, PERIOD_MONTHS, PriceRow, adminCircles, adminConfig, adminDeclineRequest,
-  adminGrantPlus, adminOverview, adminPricing, adminRequests, adminSetAdmin, adminSetAi, adminSetConfig, adminSetPrice,
+  adminGrantPlus, adminOverview, adminTraffic, Traffic, adminPricing, adminRequests, adminSetAdmin, adminSetAi, adminSetConfig, adminSetPrice,
   adminUpdateCircle, adminUsers, usd,
 } from "../lib/admin";
 import { confirm, notify, useApp } from "../lib/app";
@@ -77,12 +77,14 @@ function Stat({ label, value, sub, icon }: { label: string; value: string; sub?:
 
 function OverviewTab({ goTab }: { goTab: (t: Tab) => void }) {
   const fn = useCallback(async () => {
-    const [o, cfg, req, circles] = await Promise.all([adminOverview(), adminConfig(), adminRequests().catch(() => [] as AdminRequest[]), adminCircles().catch(() => [] as AdminCircle[])]);
-    return { o, req, circles, cfg: Object.fromEntries(cfg.map((r) => [r.key, r.value])) as Record<string, any> };
+    const [o, cfg, req, circles, traffic] = await Promise.all([adminOverview(), adminConfig(), adminRequests().catch(() => [] as AdminRequest[]),
+      adminCircles().catch(() => [] as AdminCircle[]), adminTraffic().catch(() => null as Traffic | null)]);
+    return { o, req, circles, traffic, cfg: Object.fromEntries(cfg.map((r) => [r.key, r.value])) as Record<string, any> };
   }, []);
   const { data, err, loading, reload } = useAdmin(fn);
   if (!data) return err ? <View style={{ padding: S.lg }}><Banner tone="owe" text={err} /></View> : <Loading />;
-  const { o, cfg, req, circles } = data;
+  const { o, cfg, req, circles, traffic } = data;
+  const mn = traffic?.by_source.find((x) => x.source === "macronations");
   const plusCount = circles.filter((c) => c.plus_active).length;
   const cap = Number(cfg.daily_cap_usd ?? 5);
   const max = Math.max(0.01, ...o.daily.map((d) => Number(d.usd)));
@@ -135,6 +137,22 @@ function OverviewTab({ goTab }: { goTab: (t: Tab) => void }) {
         <Stat icon="sparkles-outline" label="Plus circles" value={String(plusCount)} sub={cfg.ai_paid_enabled ? "Charging for AI: on" : "Charging for AI: off (AI free for all)"} />
         <Stat icon="hourglass-outline" label="Plus requests" value={String(req.length)} sub="waiting for you" />
       </View>
+
+      {traffic ? (
+        <Section title="Where visitors come from · 30 days">
+          <View style={{ flexDirection: "row", gap: S.md }}>
+            <Stat icon="school-outline" label="From MacroNations" value={String(mn?.visits_30d ?? 0)} sub={`${mn?.visitors_30d ?? 0} people · ${mn?.signups_30d ?? 0} sign-ups`} />
+            <Stat icon="person-add-outline" label="New Saath users" value={String(traffic.signups_30d)} sub={`${traffic.signups_total} in total`} />
+          </View>
+          <Card style={{ paddingVertical: 4 }}>
+            {traffic.by_source.length ? traffic.by_source.map((x, i) => (
+              <Row key={x.source} title={x.source} subtitle={`${x.visitors_30d} people · ${x.signups_30d} sign-ups (30 d) · ${x.signups_all} sign-ups all time`} last={i === traffic.by_source.length - 1}
+                right={<Text style={[T.body, { color: C.ink, fontWeight: "700" }]}>{x.visits_30d}</Text>} />
+            )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No visits recorded yet. Visits are counted on the Saath web pages (about, guide and the web app).</Text>}
+          </Card>
+          <Text style={[T.tiny, { color: C.ink3 }]}>Counted by Saath itself: no IP addresses, no cookies, no outside analytics. Clicks on the Saath button are also counted on macronations.com (its Analytics tab).</Text>
+        </Section>
+      ) : null}
 
       <Section title="Spend by feature · 30 days">
         <Card style={{ gap: 0, paddingVertical: S.sm }}>

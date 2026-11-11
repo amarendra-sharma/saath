@@ -81,6 +81,29 @@ Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-f
 - **Payments are not connected yet.** "Request Plus" in a circle sends a request to the admin console (Plans tab). Collect payment yourself, then press Grant. When a payment provider is added, it only needs to call the same grant function.
 - Before switching charging on: give your own circles Plus, or set their AI to "Always on" (Circles tab).
 
+## Public pages and the user guide
+
+These are plain HTML files in `public/`, published with the web app at saath.macronations.com:
+
+| Page | File | What it is |
+| --- | --- | --- |
+| `/about.html` | `public/about.html` | The landing page people reach from macronations.com |
+| `/guide.html` | `public/guide.html` | The user guide (manual), screen by screen |
+| `/privacy.html` | `public/privacy.html` | Privacy policy |
+
+**Keep the guide current.** Every change to how Saath works must update `public/guide.html` in the same change:
+1. edit the section that describes the screen or feature (section ids such as `#money-trail` are linked from the app, so keep them);
+2. add a dated line at the top of "What's new";
+3. use the exact button and screen names the app shows (from `src/lib/strings.en.ts`).
+
+The app links to the guide from Profile ("How to use Saath") and to the landing page from the welcome screen (`extra.guideUrl` and `extra.aboutUrl` in `app.json`).
+
+## Where visitors come from
+
+- **macronations.com** has a small "Saath ↗" link beside "About MacroNations" at the bottom of the course portal, and a "Saath · also from MacroNations" pill in the site footer. Each click is logged in MacroNations' own `page_views` table (course `saath`, event `open`) and shows on its super-admin Analytics tab as "Saath Opens". The link carries `utm_source=macronations`, `utm_medium=portal|footer` and the MacroNations session id (`mn_sid`).
+- **Saath** counts its own visits with `public/saath-track.js` (about and guide pages) and `src/lib/visits.ts` (web app): source, medium, page, `mn_sid` and a random browser id. It uses no IP address, cookies or outside analytics (migration 016, table `saath_visits`). When a visitor creates a Saath account, the source is saved once in `saath_signup_sources`.
+- The admin console's Home tab shows "Where visitors come from · 30 days": visits, people and sign-ups by source.
+
 ## Admin console
 
 Admins see a shield button on the home screen and an "Admin console" button in Profile (route `/admin`). It has five tabs:

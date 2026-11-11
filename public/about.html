@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Saath — share costs with family and friends, fairly</title>
+<meta name="description" content="Saath keeps every bill, every share and every payment in one place for families and friends sharing costs: a parent's medical care, a trip, a wedding, a shared home. Free to use.">
+<meta property="og:title" content="Saath — share costs with family and friends, fairly">
+<meta property="og:description" content="Every bill, every share and every payment in one place. Free to use. From the team behind MacroNations.">
+<meta property="og:image" content="https://saath.macronations.com/img/overview.jpg">
+<meta name="theme-color" content="#1A3A6E">
+<link rel="icon" href="/img/saath-icon-64.png">
+<style>
+  :root { --bg:#F4F6FA; --card:#FFFFFF; --ink:#0E1A2B; --ink2:#44526A; --ink3:#63708A; --line:#E2E7EF;
+          --navy:#1A3A6E; --navy2:#112850; --soft:#E8EEF8; --gold:#C99A3E; --gold2:#8F6316; --goldsoft:#F8EFDD; --ok:#0E7A48; }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior:auto; } }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans","Noto Sans Devanagari",sans-serif; }
+  a { color:var(--navy); }
+  .wrap { max-width:1080px; margin:0 auto; padding:0 20px; }
+  .skip { position:absolute; left:-999px; top:8px; background:#fff; padding:8px 12px; border-radius:8px; z-index:10; }
+  .skip:focus { left:8px; }
+  :focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+
+  /* nav */
+  nav.top { position:sticky; top:0; z-index:5; background:rgba(244,246,250,.92); backdrop-filter:saturate(1.4) blur(8px); border-bottom:1px solid var(--line); }
+  nav.top .wrap { display:flex; align-items:center; gap:18px; height:62px; }
+  .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; color:var(--ink); text-decoration:none; letter-spacing:-.2px; }
+  .brand img { width:32px; height:32px; border-radius:8px; }
+  .brand small { font-weight:600; color:var(--ink3); font-size:13px; }
+  nav.top .links { margin-left:auto; display:flex; gap:18px; align-items:center; }
+  nav.top .links a { color:var(--ink2); text-decoration:none; font-weight:600; font-size:15px; }
+  nav.top .links a:hover { color:var(--navy); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 20px; border-radius:12px; font-weight:700; text-decoration:none; font-size:16px; border:0; cursor:pointer; }
+  .btn-primary { background:var(--navy); color:#fff !important; }
+  .btn-primary:hover { background:var(--navy2); }
+  .btn-ghost { background:var(--soft); color:var(--navy) !important; }
+  .btn-sm { padding:9px 14px; font-size:14px; border-radius:10px; }
+  @media (max-width:720px) { nav.top .links a.hide-sm { display:none; } }
+
+  /* hero */
+  .hero { background:linear-gradient(160deg,var(--navy2),var(--navy) 60%,#24508F); color:#fff; overflow:hidden; }
+  .hero .wrap { display:grid; grid-template-columns:1.1fr .9fr; gap:40px; align-items:center; padding-top:64px; padding-bottom:64px; }
+  .eyebrow { display:inline-block; font-size:13px; font-weight:700; letter-spacing:.6px; text-transform:uppercase; color:var(--gold); background:rgba(201,154,62,.14); padding:6px 10px; border-radius:999px; }
+  .hero h1 { font-size:46px; line-height:1.1; margin:16px 0 14px; letter-spacing:-.8px; }
+  .hero p.lead { font-size:19px; color:rgba(255,255,255,.88); margin:0 0 26px; max-width:560px; }
+  .hero .ctas { display:flex; gap:12px; flex-wrap:wrap; }
+  .hero .btn-primary { background:var(--gold); color:#1B1405 !important; }
+  .hero .btn-primary:hover { background:#D9AC52; }
+  .hero .btn-ghost { background:rgba(255,255,255,.12); color:#fff !important; }
+  .hero .note { margin-top:16px; font-size:14px; color:rgba(255,255,255,.72); }
+  .phones { position:relative; height:520px; }
+  .phone { position:absolute; width:250px; border-radius:30px; background:#0B1526; padding:9px; box-shadow:0 30px 60px rgba(4,10,24,.45); }
+  .phone img { width:100%; display:block; border-radius:22px; }
+  .phone.a { right:150px; top:30px; transform:rotate(-4deg); }
+  .phone.b { right:0; top:0; transform:rotate(3deg); }
+  @media (max-width:880px) { .hero .wrap { grid-template-columns:1fr; } .phones { height:430px; } .phone { width:210px; } .phone.a { right:auto; left:6%; } .phone.b { right:6%; } .hero h1 { font-size:36px; } }
+
+  section { padding:72px 0; }
+  section.alt { background:#fff; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  h2 { font-size:32px; letter-spacing:-.5px; margin:0 0 10px; }
+  .sub { color:var(--ink2); font-size:18px; margin:0 0 34px; max-width:720px; }
+
+  .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; counter-reset:s; }
+  .step { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:22px; }
+  .step::before { counter-increment:s; content:counter(s); display:inline-flex; width:34px; height:34px; border-radius:10px; align-items:center; justify-content:center; background:var(--soft); color:var(--navy); font-weight:800; margin-bottom:12px; }
+  .step h3 { margin:0 0 6px; font-size:19px; }
+  .step p { margin:0; color:var(--ink2); }
+  @media (max-width:820px) { .steps { grid-template-columns:1fr; } }
+
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  .feat { background:var(--bg); border:1px solid var(--line); border-radius:16px; padding:20px; }
+  section:not(.alt) .feat { background:#fff; }
+  .feat .ic { width:40px; height:40px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:var(--soft); margin-bottom:10px; }
+  .feat .ic svg { width:22px; height:22px; stroke:var(--navy); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .feat h3 { margin:0 0 4px; font-size:17px; }
+  .feat p { margin:0; color:var(--ink2); font-size:15px; }
+  @media (max-width:900px) { .grid { grid-template-columns:1fr 1fr; } }
+  @media (max-width:560px) { .grid { grid-template-columns:1fr; } }
+
+  .chips { display:flex; flex-wrap:wrap; gap:10px; }
+  .chip { background:#fff; border:1px solid var(--line); padding:9px 14px; border-radius:999px; font-weight:600; color:var(--ink2); }
+
+  .shots { display:grid; grid-template-columns:repeat(4,1fr); gap:18px; }
+  .shots figure { margin:0; }
+  .shots .phone { position:static; width:100%; transform:none; box-shadow:0 14px 30px rgba(14,26,43,.16); }
+  .shots figcaption { text-align:center; color:var(--ink3); font-size:14px; margin-top:10px; }
+  @media (max-width:900px) { .shots { grid-template-columns:1fr 1fr; } }
+
+  .price { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+  .plan { background:#fff; border:1px solid var(--line); border-radius:20px; padding:26px; }
+  .plan.plus { border:2px solid var(--gold); background:linear-gradient(180deg,#fff,var(--goldsoft)); }
+  .plan h3 { margin:0; font-size:22px; }
+  .plan .amt { font-size:30px; font-weight:800; margin:6px 0 2px; }
+  .plan .per { color:var(--ink3); font-size:14px; }
+  .plan ul { padding-left:0; list-style:none; margin:16px 0 0; }
+  .plan li { padding:6px 0 6px 28px; position:relative; color:var(--ink2); }
+  .plan li::before { content:""; position:absolute; left:2px; top:11px; width:14px; height:8px; border-left:2.5px solid var(--ok); border-bottom:2.5px solid var(--ok); transform:rotate(-45deg); }
+  .plan.plus li::before { border-color:var(--gold2); }
+  .badge { display:inline-block; background:var(--ok); color:#fff; font-size:12px; font-weight:700; padding:4px 9px; border-radius:999px; margin-left:8px; vertical-align:middle; }
+  @media (max-width:760px) { .price { grid-template-columns:1fr; } }
+
+  .trust { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+  .trust div { background:#fff; border:1px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .trust h3 { margin:0 0 4px; font-size:17px; }
+  .trust p { margin:0; color:var(--ink2); font-size:15px; }
+  @media (max-width:700px) { .trust { grid-template-columns:1fr; } }
+
+  details { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px 18px; margin:10px 0; }
+  summary { font-weight:700; cursor:pointer; }
+  details p { color:var(--ink2); margin:10px 0 2px; }
+
+  .cta-band { background:var(--navy); color:#fff; text-align:center; }
+  .cta-band h2 { color:#fff; }
+  .cta-band p { color:rgba(255,255,255,.85); margin:0 auto 24px; max-width:620px; font-size:18px; }
+  .cta-band .btn-primary { background:var(--gold); color:#1B1405 !important; }
+
+  footer { padding:34px 0 50px; color:var(--ink3); font-size:14px; }
+  footer .wrap { display:flex; flex-wrap:wrap; gap:14px 24px; align-items:center; }
+  footer a { color:var(--ink2); text-decoration:none; font-weight:600; }
+  footer .right { margin-left:auto; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<nav class="top" aria-label="Main">
+  <div class="wrap">
+    <a class="brand" href="/about.html"><img src="/img/saath-icon.png" alt=""> Saath <small>साथ</small></a>
+    <div class="links">
+      <a class="hide-sm" href="#how">How it works</a>
+      <a class="hide-sm" href="#features">Features</a>
+      <a class="hide-sm" href="#pricing">Pricing</a>
+      <a href="/guide.html">Guide</a>
+      <a class="btn btn-primary btn-sm" href="/">Open Saath</a>
+    </div>
+  </div>
+</nav>
+
+<main id="main">
+<header class="hero">
+  <div class="wrap">
+    <div>
+      <span class="eyebrow">From the team behind MacroNations</span>
+      <h1>Share costs with the people you do life with.</h1>
+      <p class="lead">A parent's medical care, a trip with friends, a wedding, a shared home. Saath keeps every bill, every share and every payment in one place, so nobody has to chase anyone and everyone can see where the money went.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="/">Start a circle, free</a>
+        <a class="btn btn-ghost" href="/guide.html">Read the guide</a>
+      </div>
+      <p class="note">Works in your browser on any phone or computer. In English, हिन्दी, বাংলা, Español, Français and Português.</p>
+    </div>
+    <div class="phones" aria-hidden="true">
+      <div class="phone a"><img src="/img/pay.jpg" alt=""></div>
+      <div class="phone b"><img src="/img/overview.jpg" alt=""></div>
+    </div>
+  </div>
+</header>
+
+<section id="how">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="sub">Set it up once in about five minutes. After that, Saath keeps the accounts.</p>
+    <div class="steps">
+      <div class="step"><h3>Start a circle and invite people</h3><p>Name it, pick what it's for and the currency, and send the invite code on WhatsApp. People who don't use the app can still be added and reminded.</p></div>
+      <div class="step"><h3>Agree the shares, add the bills</h3><p>Each person's share can be any percentage you agree on. Add a bill with a photo or PDF of the receipt and it is split automatically.</p></div>
+      <div class="step"><h3>Pay directly, see where it went</h3><p>Members pay the person or hospital you choose with UPI, Wise, PayPal, a bank transfer or cash. The receiver records each bill they pay, with the receipt, and someone else checks it.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="alt" id="features">
+  <div class="wrap">
+    <h2>Everything a shared budget needs</h2>
+    <p class="sub">Built first for one family sharing a parent's care across countries, then opened up to any group.</p>
+    <div class="grid">
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></div><h3>Fair shares</h3><p>Percentages, a fixed amount each month, or a different split for one bill. Everyone sees what they owe and why.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h3"/></svg></div><h3>Pay any way, no fees taken</h3><p>Saath never holds your money. It opens the payer's own app with the details filled in, or shows a QR code to scan.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 8 3 8H3s3-1 3-8M10 20a2 2 0 0 0 4 0"/></svg></div><h3>Reminders that aren't awkward</h3><p>Polite WhatsApp and email reminders go out each period in each person's own language, so nobody has to ask.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M6 8.5v1a4 4 0 0 0 4 4h0M18 8.5v1a4 4 0 0 1-4 4h0M12 13.5v2"/></svg></div><h3>Money trail</h3><p>See what the receiver got, what they paid out, and what is still with them. Every payment to a provider needs proof and is checked by another member.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div><h3>Bill Check</h3><p>Flags wrong totals, duplicate bills, prices above the printed MRP, expired medicines and signs of editing. It warns; it never accuses.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M5 20V10M10 20V4M15 20v-7M20 20v-4"/></svg></div><h3>Insights</h3><p>Monthly spending, where the money goes, and who has paid what against the share they agreed.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 14l2 2 4-4"/></svg></div><h3>A written agreement</h3><p>Put the arrangement in writing (shares, due dates, big costs, leaving) and everyone signs in the app.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg></div><h3>Statements</h3><p>PDF and spreadsheet statements for any dates, ready for an insurer, a tax return or a family meeting.</p></div>
+      <div class="feat"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></svg></div><h3>Made for families far apart</h3><p>Each person sees amounts in the circle's currency and gets reminders in their language, wherever they live.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>For any group that shares costs</h2>
+    <p class="sub">Each kind of circle comes with its own list of bill categories.</p>
+    <div class="chips">
+      <span class="chip">Medical care</span><span class="chip">Elder care</span><span class="chip">Education</span><span class="chip">Household &amp; rent</span>
+      <span class="chip">Trips</span><span class="chip">Weddings &amp; events</span><span class="chip">Building or repair projects</span><span class="chip">Clubs &amp; communities</span>
+      <span class="chip">Fundraisers &amp; group gifts</span><span class="chip">Funerals &amp; memorials</span><span class="chip">Pet care</span>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <h2>See it in action</h2>
+    <p class="sub">Screens from an example family circle.</p>
+    <div class="shots">
+      <figure><div class="phone"><img src="/img/overview.jpg" alt="Circle overview: your balance, the money trail and this month's spending" loading="lazy"></div><figcaption>The circle at a glance</figcaption></figure>
+      <figure><div class="phone"><img src="/img/pay.jpg" alt="Paying your share: a UPI QR code with the amount filled in" loading="lazy"></div><figcaption>Pay with a tap or a QR code</figcaption></figure>
+      <figure><div class="phone"><img src="/img/trail.jpg" alt="Money trail: payments to providers with proof and verification" loading="lazy"></div><figcaption>Where the money went</figcaption></figure>
+      <figure><div class="phone"><img src="/img/insights.jpg" alt="Insights: spending by month and by category" loading="lazy"></div><figcaption>Insights</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="pricing">
+  <div class="wrap">
+    <h2>Free to use. AI is optional.</h2>
+    <p class="sub">Everything you need to share costs is free, for any number of people and bills. Only AI bill reading, which costs us money each time it runs, is part of the optional Saath Plus.</p>
+    <div class="price">
+      <div class="plan">
+        <h3>Saath</h3>
+        <div class="amt">Free</div><div class="per">Always, for every circle</div>
+        <ul>
+          <li>Unlimited circles, members and bills</li>
+          <li>Shares, budgets and per-bill splits</li>
+          <li>Receipts and payment proof in one place</li>
+          <li>WhatsApp and email reminders</li>
+          <li>Money trail with proof and verification</li>
+          <li>Basic Bill Check, Insights, agreements</li>
+          <li>PDF and CSV statements</li>
+        </ul>
+      </div>
+      <div class="plan plus">
+        <h3>Saath Plus <span class="badge">Free during early access</span></h3>
+        <div class="amt">From ₹149 · $3.99</div><div class="per">per circle per month, not per person · yearly and 90-day options · priced for each country</div>
+        <ul>
+          <li>Snap a bill: AI fills in the amount, date, seller and category</li>
+          <li>Multi-page PDFs split into separate bills</li>
+          <li>Deep Bill Check: every line read, edits and tampering spotted</li>
+          <li>Prices compared with local and online rates</li>
+          <li>Handwritten and Indian-language bills double-checked</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="alt">
+  <div class="wrap">
+    <h2>Your family's money stays your family's business</h2>
+    <p class="sub">Saath is built for trust between the people in a circle, and keeps everyone else out.</p>
+    <div class="trust">
+      <div><h3>Saath never touches the money</h3><p>Payments go straight from one person to another, or to the hospital. Saath only records them.</p></div>
+      <div><h3>Private to your circle</h3><p>Bills, receipts and payments are visible only to the members of that circle. Receipts are kept in private storage.</p></div>
+      <div><h3>No ads, no selling data</h3><p>We don't show advertising and never sell or rent your information. <a href="/privacy.html">Read the privacy policy</a>.</p></div>
+      <div><h3>Run by MacroNations LLC</h3><p>A New York company that also runs the MacroNations economics courses. One MacroNations sign-in works for both.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Questions</h2>
+    <details><summary>Does Saath hold or move any money?</summary><p>No. Members pay each other, or the hospital or shop, directly with the apps they already use. Saath opens those apps with the details filled in and keeps the record.</p></details>
+    <details><summary>Does everyone need the app?</summary><p>No. The organiser can add people who never install it; they still get reminders by WhatsApp or email, and can join later and keep their history.</p></details>
+    <details><summary>What if the shares aren't equal?</summary><p>That's normal. Shares can be any percentages the group agrees on, and one bill can be split differently from the rest.</p></details>
+    <details><summary>How do we know the money was spent on the bills?</summary><p>The person who receives the money records each payment they make to a provider, with the receipt. Another member verifies it or asks a question, and the Money trail shows what is still with them.</p></details>
+    <details><summary>Is it really free?</summary><p>Yes. Everything except AI bill reading is free and always will be. AI is free for now too while Saath is in early access; later it becomes part of Saath Plus, priced per circle.</p></details>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="wrap">
+    <h2>Start your circle today</h2>
+    <p>Set it up once, invite your family or friends, and let Saath keep the accounts.</p>
+    <a class="btn btn-primary" href="/">Open Saath, it's free</a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 MacroNations LLC, New York</span>
+    <a href="/guide.html">User guide</a>
+    <a href="/privacy.html">Privacy</a>
+    <a href="mailto:support@macronations.com">Contact</a>
+    <a class="right" href="https://macronations.com">macronations.com</a>
+  </div>
+</footer>
+<script src="/saath-track.js" defer></script>
+</body>
+</html>

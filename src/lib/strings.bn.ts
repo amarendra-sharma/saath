@@ -635,4 +635,6 @@ export const bn: Partial<Record<StringKey, string>> = {
   err_question_required: "একটি ছোট প্রশ্ন লিখুন।",
   err_bad_date: "এই তারিখ ঠিক নয়।",
   pot_label: "{name}-কে পাঠানো, লেখা বিল বাদে",
+  how_to_use: "সাথ কীভাবে ব্যবহার করবেন",
+  see_how_it_works: "দেখুন সাথ কীভাবে কাজ করে",
 };

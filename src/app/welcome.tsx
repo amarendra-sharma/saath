@@ -76,6 +76,8 @@ export default function Welcome() {
                 <Text style={[T.body, { color: C.white, flex: 1 }]}>{t(k)}</Text>
               </View>
             ))}
+            <Text style={[T.small, { color: C.gold, fontWeight: "700", marginTop: 4 }]} accessibilityRole="link"
+              onPress={() => openUrl(String((Constants.expoConfig?.extra as any)?.aboutUrl ?? "https://saath.macronations.com/about.html"))}>{t("see_how_it_works")} →</Text>
           </View>
         ) : null}
       </View>
