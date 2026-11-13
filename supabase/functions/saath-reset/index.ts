@@ -1,9 +1,9 @@
-// saath-reset — Saath-branded password reset with a 6-digit code by e-mail.
+// saath-reset — Bengu-branded password reset with a 6-digit code by e-mail.
 // Deploy with verify_jwt = false.
 //   { action: "send",   email, language }
 //   { action: "verify", email, code, new_password }
 // Needs RESEND_API_KEY (already a project secret). Optional SAATH_EMAIL_FROM,
-// e.g. "Saath <saath@macronations.com>" once that domain is verified in Resend.
+// e.g. "Bengu <saath@macronations.com>" once that domain is verified in Resend.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {
@@ -18,12 +18,12 @@ const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE
 });
 
 const T: Record<string, { subject: string; body: (c: string) => string }> = {
-  en: { subject: "Your Saath reset code", body: (c) => `Your Saath password reset code is ${c}. It expires in 15 minutes. If you did not ask for this, you can ignore this e-mail.` },
-  hi: { subject: "आपका साथ रीसेट कोड", body: (c) => `आपका साथ पासवर्ड रीसेट कोड ${c} है। यह 15 मिनट में समाप्त हो जाएगा। अगर आपने यह अनुरोध नहीं किया, तो इस ई-मेल को अनदेखा करें।` },
-  es: { subject: "Tu código de Saath", body: (c) => `Tu código para restablecer la contraseña de Saath es ${c}. Caduca en 15 minutos. Si no lo solicitaste, ignora este correo.` },
-  fr: { subject: "Votre code Saath", body: (c) => `Votre code de réinitialisation Saath est ${c}. Il expire dans 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.` },
-  pt: { subject: "Seu código do Saath", body: (c) => `Seu código para redefinir a senha do Saath é ${c}. Ele expira em 15 minutos. Se você não pediu isso, ignore este e-mail.` },
-  bn: { subject: "আপনার সাথ রিসেট কোড", body: (c) => `আপনার সাথ পাসওয়ার্ড রিসেট কোড ${c}। এটি ১৫ মিনিটে মেয়াদ শেষ হবে। আপনি অনুরোধ না করলে এই ই-মেইলটি উপেক্ষা করুন।` },
+  en: { subject: "Your Bengu reset code", body: (c) => `Your Bengu password reset code is ${c}. It expires in 15 minutes. If you did not ask for this, you can ignore this e-mail.` },
+  hi: { subject: "आपका Bengu रीसेट कोड", body: (c) => `आपका Bengu पासवर्ड रीसेट कोड ${c} है। यह 15 मिनट में समाप्त हो जाएगा। अगर आपने यह अनुरोध नहीं किया, तो इस ई-मेल को अनदेखा करें।` },
+  es: { subject: "Tu código de Bengu", body: (c) => `Tu código para restablecer la contraseña de Bengu es ${c}. Caduca en 15 minutos. Si no lo solicitaste, ignora este correo.` },
+  fr: { subject: "Votre code Bengu", body: (c) => `Votre code de réinitialisation Bengu est ${c}. Il expire dans 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.` },
+  pt: { subject: "Seu código do Bengu", body: (c) => `Seu código para redefinir a senha do Bengu é ${c}. Ele expira em 15 minutos. Se você não pediu isso, ignore este e-mail.` },
+  bn: { subject: "আপনার Bengu রিসেট কোড", body: (c) => `আপনার Bengu পাসওয়ার্ড রিসেট কোড ${c}। এটি ১৫ মিনিটে মেয়াদ শেষ হবে। আপনি অনুরোধ না করলে এই ই-মেইলটি উপেক্ষা করুন।` },
 };
 
 async function sha(s: string) {
@@ -55,7 +55,7 @@ Deno.serve(async (req) => {
       });
       const key = Deno.env.get("RESEND_API_KEY");
       if (!key) return json({ error: "email_not_configured" }, 503);
-      const from = Deno.env.get("SAATH_EMAIL_FROM") ?? "Saath <onboarding@resend.dev>";
+      const from = Deno.env.get("SAATH_EMAIL_FROM") ?? "Bengu <onboarding@resend.dev>";
       const r = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },

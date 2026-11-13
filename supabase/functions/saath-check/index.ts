@@ -3,7 +3,7 @@
 //   (a) rules in code — free: arithmetic, above-MRP, expired stock, GSTIN checksum, duplicates, dates, patient name;
 //   (b) forensic read — reuses the scan's read of the same file when there is one; otherwise Haiku reads it.
 //       Sonnet re-reads only for high-value bills, poor copies, or reads that don't add up (manual checks only);
-//   (c) local price check — what Saath users paid locally first; web search only for the top items above a
+//   (c) local price check — what Bengu users paid locally first; web search only for the top items above a
 //       minimum amount, when local data is thin, never on automatic runs, and only on the paid plan when
 //       SAATH_BILL_CHECK_PAID=true. Results cached 30 days per item + city, shared across circles.
 // Deploy with verify_jwt = true. Body: { expense_id, language?, auto? }
@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
     if (!g.ok && !["ai_limit_reached", "ai_paused", "ai_off", "ai_off_circle", "plus_required"].includes(g.error ?? "")) return json({ error: g.error, message: g.message, ai: { allowance: g.allowance } }, g.status ?? 429);
     // paid switch: env secret or admin console (Features → Bill Check only on Plus)
     const PAID = PAID_ENV || cfg.bill_check_paid === true;
-    if (PAID && !ownerKey && circle?.plan !== "plus") return json({ error: "upgrade_required", message: "Bill Check is part of Saath Plus." }, 402);
+    if (PAID && !ownerKey && circle?.plan !== "plus") return json({ error: "upgrade_required", message: "Bill Check is part of Bengu Plus." }, 402);
     const aiAllowed = g.ok;
     const webAllowed = aiAllowed && !auto && cfg.price_web_enabled !== false && (!PAID || circle?.plan === "plus");
 

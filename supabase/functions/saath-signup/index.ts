@@ -1,4 +1,4 @@
-// saath-signup — creates a Saath account without the shared project's
+// saath-signup — creates a Bengu account without the shared project's
 // confirmation e-mail (that template is branded for MacroNations courses).
 // Deploy with verify_jwt = false.  Body: { email, password, full_name, language }
 import { createClient } from "npm:@supabase/supabase-js@2";

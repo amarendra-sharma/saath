@@ -1,4 +1,4 @@
-// Records every Anthropic call Saath makes into public.saath_ai_usage, with cost.
+// Records every Anthropic call Bengu makes into public.saath_ai_usage, with cost.
 // Prices: USD per million tokens, from platform.claude.com/docs/en/about-claude/pricing (checked 6 Nov 2026).
 // Haiku 5.5 is tiered: a request whose whole prompt (input + cache reads + cache writes) is over 100,000 tokens
 // pays the higher row for ALL of its tokens. Web search: $10 per 1,000 searches.

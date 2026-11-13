@@ -4,7 +4,7 @@
 //   * manual:    the app POSTs {circle_id} with the organiser's JWT
 // Secrets:
 //   WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID   (Meta WhatsApp Cloud API; optional)
-//   WHATSAPP_TEMPLATE  (default "saath_dues_reminder"; 4 body params: name, circle, amount, due date)
+//   WHATSAPP_TEMPLATE  (default "bengu_dues_reminder"; 4 body params: name, circle, amount, due date)
 //   RESEND_API_KEY (already set), SAATH_EMAIL_FROM (optional)
 // The cron key lives in Supabase Vault (saath_cron_secret), checked via saath_check_cron().
 // If a channel isn't configured the attempt is logged as "skipped" — nothing breaks.
@@ -31,28 +31,28 @@ const WA_LANG: Record<string, string> = { en: "en", hi: "hi", es: "es", fr: "fr"
 
 const TXT: Record<string, { subject: (c: string) => string; body: (n: string, c: string, a: string, d: string, pay: string) => string }> = {
   en: {
-    subject: (c) => `Saath reminder: your share for ${c}`,
-    body: (n, c, a, d, pay) => `Hello ${n},\n\nThis is a friendly reminder from Saath for "${c}".\nYour share currently due is ${a} (by ${d}).\n${pay}\nOnce you have paid, please mark it in the Saath app so everyone can see it.\n\nThank you for being there.\n— Saath`,
+    subject: (c) => `Bengu reminder: your share for ${c}`,
+    body: (n, c, a, d, pay) => `Hello ${n},\n\nThis is a friendly reminder from Bengu for "${c}".\nYour share currently due is ${a} (by ${d}).\n${pay}\nOnce you have paid, please mark it in the Bengu app so everyone can see it.\n\nThank you for being there.\n— Bengu`,
   },
   hi: {
-    subject: (c) => `साथ अनुस्मारक: ${c} में आपका हिस्सा`,
-    body: (n, c, a, d, pay) => `नमस्ते ${n},\n\n"${c}" के लिए साथ की ओर से एक विनम्र अनुस्मारक।\nआपका बकाया हिस्सा ${a} है (${d} तक)।\n${pay}\nभुगतान के बाद कृपया साथ ऐप में दर्ज करें ताकि सभी देख सकें।\n\nसाथ देने के लिए धन्यवाद।\n— साथ`,
+    subject: (c) => `Bengu अनुस्मारक: ${c} में आपका हिस्सा`,
+    body: (n, c, a, d, pay) => `नमस्ते ${n},\n\n"${c}" के लिए Bengu की ओर से एक विनम्र अनुस्मारक।\nआपका बकाया हिस्सा ${a} है (${d} तक)।\n${pay}\nभुगतान के बाद कृपया Bengu ऐप में दर्ज करें ताकि सभी देख सकें।\n\nसाथ देने के लिए धन्यवाद।\n— Bengu`,
   },
   es: {
-    subject: (c) => `Recordatorio de Saath: tu parte de ${c}`,
-    body: (n, c, a, d, pay) => `Hola ${n}:\n\nTe recordamos desde Saath para "${c}".\nTu parte pendiente es ${a} (antes del ${d}).\n${pay}\nCuando pagues, márcalo en la app Saath para que todos lo vean.\n\nGracias por estar ahí.\n— Saath`,
+    subject: (c) => `Recordatorio de Bengu: tu parte de ${c}`,
+    body: (n, c, a, d, pay) => `Hola ${n}:\n\nTe recordamos desde Bengu para "${c}".\nTu parte pendiente es ${a} (antes del ${d}).\n${pay}\nCuando pagues, márcalo en la app Bengu para que todos lo vean.\n\nGracias por estar ahí.\n— Bengu`,
   },
   fr: {
-    subject: (c) => `Rappel Saath : votre part pour ${c}`,
-    body: (n, c, a, d, pay) => `Bonjour ${n},\n\nPetit rappel de Saath pour « ${c} ».\nVotre part à régler est de ${a} (avant le ${d}).\n${pay}\nUne fois payé, indiquez-le dans l'application Saath pour que tout le monde le voie.\n\nMerci de votre soutien.\n— Saath`,
+    subject: (c) => `Rappel Bengu : votre part pour ${c}`,
+    body: (n, c, a, d, pay) => `Bonjour ${n},\n\nPetit rappel de Bengu pour « ${c} ».\nVotre part à régler est de ${a} (avant le ${d}).\n${pay}\nUne fois payé, indiquez-le dans l'application Bengu pour que tout le monde le voie.\n\nMerci de votre soutien.\n— Bengu`,
   },
   pt: {
-    subject: (c) => `Lembrete do Saath: sua parte de ${c}`,
-    body: (n, c, a, d, pay) => `Olá ${n},\n\nUm lembrete do Saath para "${c}".\nSua parte pendente é ${a} (até ${d}).\n${pay}\nDepois de pagar, registre no app Saath para que todos vejam.\n\nObrigado pelo apoio.\n— Saath`,
+    subject: (c) => `Lembrete do Bengu: sua parte de ${c}`,
+    body: (n, c, a, d, pay) => `Olá ${n},\n\nUm lembrete do Bengu para "${c}".\nSua parte pendente é ${a} (até ${d}).\n${pay}\nDepois de pagar, registre no app Bengu para que todos vejam.\n\nObrigado pelo apoio.\n— Bengu`,
   },
   bn: {
-    subject: (c) => `সাথ অনুস্মারক: ${c}-এ আপনার অংশ`,
-    body: (n, c, a, d, pay) => `নমস্কার ${n},\n\n"${c}"-এর জন্য সাথ থেকে একটি অনুস্মারক।\nআপনার বকেয়া অংশ ${a} (${d}-এর মধ্যে)।\n${pay}\nপরিশোধের পর অনুগ্রহ করে সাথ অ্যাপে চিহ্নিত করুন যাতে সবাই দেখতে পান।\n\nপাশে থাকার জন্য ধন্যবাদ।\n— সাথ`,
+    subject: (c) => `Bengu অনুস্মারক: ${c}-এ আপনার অংশ`,
+    body: (n, c, a, d, pay) => `নমস্কার ${n},\n\n"${c}"-এর জন্য Bengu থেকে একটি অনুস্মারক।\nআপনার বকেয়া অংশ ${a} (${d}-এর মধ্যে)।\n${pay}\nপরিশোধের পর অনুগ্রহ করে Bengu অ্যাপে চিহ্নিত করুন যাতে সবাই দেখতে পান।\n\nপাশে থাকার জন্য ধন্যবাদ।\n— Bengu`,
   },
 };
 const PAY_HDR: Record<string, string> = { en: "You can pay to:", hi: "आप यहाँ भुगतान कर सकते हैं:", es: "Puedes pagar a:", fr: "Vous pouvez payer à :", pt: "Você pode pagar para:", bn: "আপনি এখানে পরিশোধ করতে পারেন:" };
@@ -82,7 +82,7 @@ async function sendWhatsApp(it: Item, l: string) {
   if (!token || !phoneId) return { status: "skipped", detail: "whatsapp not configured" };
   if (!it.phone) return { status: "skipped", detail: "no phone" };
   const to = it.phone.replace(/[^\d]/g, "");
-  const template = Deno.env.get("WHATSAPP_TEMPLATE") ?? "saath_dues_reminder";
+  const template = Deno.env.get("WHATSAPP_TEMPLATE") ?? "bengu_dues_reminder";
   const params = [it.name, it.circle, money(it.amount, it.currency, l), day(it.due_date, l)]
     .map((text) => ({ type: "text", text }));
   const call = (code: string) => fetch(`https://graph.facebook.com/v21.0/${phoneId}/messages`, {
@@ -102,7 +102,7 @@ async function sendEmail(it: Item, l: string, pay: string) {
   const key = Deno.env.get("RESEND_API_KEY");
   if (!key) return { status: "skipped", detail: "email not configured" };
   if (!it.mail) return { status: "skipped", detail: "no email" };
-  const from = Deno.env.get("SAATH_EMAIL_FROM") ?? "Saath <onboarding@resend.dev>";
+  const from = Deno.env.get("SAATH_EMAIL_FROM") ?? "Bengu <onboarding@resend.dev>";
   const t = TXT[l];
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",

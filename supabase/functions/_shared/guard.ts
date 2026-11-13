@@ -1,4 +1,4 @@
-// Spend guardrails for Saath AI calls: global daily cap, per-circle monthly cap, daily and hourly limits,
+// Spend guardrails for Bengu AI calls: global daily cap, per-circle monthly cap, daily and hourly limits,
 // and a once-a-day spend alert. Settings live in public.saath_ai_config (service role only).
 
 const DEFAULTS: Record<string, any> = {
@@ -41,10 +41,10 @@ export async function guard(admin: any, cfg: Record<string, any>, o: { circleId:
     return no(503, "scan_off", "Bill reading is switched off for now. Please enter the bill by hand.");
   if (o.kind === "check" && cfg.bill_check_ai_enabled === false)
     return no(503, "ai_off", "The AI part of Bill Check is switched off for now; the basic checks still ran.");
-  // per-circle access: Saath Plus, free trial, or the admin's switch for this circle
+  // per-circle access: Bengu Plus, free trial, or the admin's switch for this circle
   if (ai && !ai.enabled) {
     if (ai.reason === "admin_off") return no(403, "ai_off_circle", "AI features are switched off for this circle. You can still add bills by hand.");
-    return no(402, "plus_required", "AI bill reading is part of Saath Plus. You can still add bills by hand, and the basic checks still run.");
+    return no(402, "plus_required", "AI bill reading is part of Bengu Plus. You can still add bills by hand, and the basic checks still run.");
   }
 
   const { data: day } = await admin.rpc("saath_ai_day_cost");
@@ -78,7 +78,7 @@ export async function afterCalls(admin: any, cfg: Record<string, any>) {
   try {
     const { data: day } = await admin.rpc("saath_ai_day_cost");
     if (Number(day ?? 0) >= Number(cfg.alert_daily_usd))
-      await alert(admin, cfg, "daily_spend", null, Number(day), `Saath AI spend today (UTC) has passed $${cfg.alert_daily_usd}: now $${Number(day).toFixed(4)}.`);
+      await alert(admin, cfg, "daily_spend", null, Number(day), `Bengu AI spend today (UTC) has passed $${cfg.alert_daily_usd}: now $${Number(day).toFixed(4)}.`);
   } catch (_) { /* never block */ }
 }
 
@@ -96,8 +96,8 @@ async function alert(admin: any, cfg: Record<string, any>, kind: string, circleI
         method: "POST",
         headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          from: Deno.env.get("SAATH_EMAIL_FROM") ?? "Saath <onboarding@resend.dev>", to: [to],
-          subject: `Saath AI alert: ${kind.replace(/_/g, " ")}`,
+          from: Deno.env.get("SAATH_EMAIL_FROM") ?? "Bengu <onboarding@resend.dev>", to: [to],
+          subject: `Bengu AI alert: ${kind.replace(/_/g, " ")}`,
           text: `${detail}\n\nSee table saath_ai_alerts and view saath_ai_v_daily in Supabase (project strategyarena).`,
         }),
       });

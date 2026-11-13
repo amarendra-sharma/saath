@@ -2,7 +2,7 @@
 // Deploy with verify_jwt = true.  Body: { action: "delete" }
 // Keeps the family's shared ledger intact: the person's member rows are
 // anonymised ("Former member"), not removed, so totals stay correct for others.
-// The login itself is removed only if it was created by Saath — this project's
+// The login itself is removed only if it was created by Bengu — this project's
 // auth is shared with MacroNations courses, and a course login must survive.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
