@@ -18,7 +18,7 @@ type Tr = (k: string, p?: Record<string, string | number>) => string;
 
 const DEFAULT_TERMS: Terms = { approval_over: null, late_days: 7, exit_notice_days: 30, mediator: "", extra: "" };
 
-/** The agreement text, built from the circle's own settings so it always matches how Saath actually splits money. */
+/** The agreement text, built from the circle's own settings so it always matches how Bengu actually splits money. */
 export function buildBody(s: Summary, terms: Terms, t: Tr, lang: string) {
   const c = s.circle, cur = c.currency;
   const active = s.members.filter((m) => m.status === "active");

@@ -1,4 +1,4 @@
-# Saath setup guide
+# Bengu setup guide
 
 Everything here is done through GitHub Desktop and websites. No Terminal needed.
 
@@ -24,16 +24,16 @@ Everything here is done through GitHub Desktop and websites. No Terminal needed.
 ## 2. Use it on the web right away (optional)
 
 1. On github.com, open the `saath` repo and go to **Settings → Pages**. Set **Source** to **GitHub Actions**.
-2. The "Deploy Saath web" action runs on every push. The app is served at **https://saath.macronations.com** (like the other MacroNations courses):
+2. The "Deploy Bengu web" action runs on every push. The app is served at **https://bengu.macronations.com** (like the other MacroNations courses):
    - DNS: a **CNAME** record `saath → amarendra-sharma.github.io` at the macronations.com DNS provider.
-   - GitHub: Settings → Pages → Custom domain = `saath.macronations.com`, then tick **Enforce HTTPS** once it's offered.
+   - GitHub: Settings → Pages → Custom domain = `bengu.macronations.com`, then tick **Enforce HTTPS** once it's offered.
    - The app is built for the domain's root (no `/saath` path), so the old `amarendra-sharma.github.io/saath/` address redirects to the new one.
 
 ## 3. Build the phone apps (Expo, free tier)
 
 1. Create a free account at **expo.dev**. Go to **Account settings → Access tokens → Create token**.
 2. In the GitHub repo, go to **Settings → Secrets and variables → Actions → New secret**. Name it `EXPO_TOKEN` and paste the token.
-3. Go to **Actions → Build Saath apps → Run workflow** and use these settings:
+3. Go to **Actions → Build Bengu apps → Run workflow** and use these settings:
    - platform `android`
    - profile `preview`
 4. The build appears on expo.dev under **Projects → saath → Builds** in about 15 minutes. Open the link on an Android phone to install it and try it.
@@ -47,7 +47,7 @@ You need two store accounts:
 
 Both stores ask for:
 
-- **A privacy-policy web page.** It's written: `public/privacy.html`, linked in the app (sign-up screen and Profile). Once step 2 is done it's live at `https://saath.macronations.com/privacy.html`. Paste that URL into both store listings. Make sure `privacy@macronations.com` receives mail, or change the address in the file.
+- **A privacy-policy web page.** It's written: `public/privacy.html`, linked in the app (sign-up screen and Profile). Once step 2 is done it's live at `https://bengu.macronations.com/privacy.html`. Paste that URL into both store listings. Make sure `privacy@macronations.com` receives mail, or change the address in the file.
 - **Screenshots.** I made phone screenshots during testing that you can use.
 - **Account deletion.** Already built: Profile → Delete my account.
 - **Short description:** "Share the cost of caring for someone you love — bills, receipts, fair splits and gentle reminders."
@@ -81,25 +81,25 @@ Without this step, the app still has one-tap "Remind on WhatsApp" buttons, which
 
 | Language (Meta code) | Template body |
 |---|---|
-| English (`en`) | Hello {{1}}, this is a reminder from Saath for "{{2}}". Your share currently due is {{3}}, by {{4}}. Please pay when you can and mark it in the Saath app. Thank you. |
+| English (`en`) | Hello {{1}}, this is a reminder from Bengu for "{{2}}". Your share currently due is {{3}}, by {{4}}. Please pay when you can and mark it in the Bengu app. Thank you. |
 | Hindi (`hi`) | नमस्ते {{1}}, "{{2}}" के लिए साथ की ओर से अनुस्मारक। आपका बकाया हिस्सा {{3}} है, {{4}} तक। सुविधा अनुसार भुगतान करें और साथ ऐप में दर्ज करें। धन्यवाद। |
 | Bengali (`bn`) | নমস্কার {{1}}, "{{2}}"-এর জন্য সাথ থেকে অনুস্মারক। আপনার বকেয়া অংশ {{3}}, {{4}}-এর মধ্যে। সুবিধামতো পরিশোধ করে সাথ অ্যাপে লিখে রাখুন। ধন্যবাদ। |
-| Spanish (`es`) | Hola {{1}}, te recordamos desde Saath para "{{2}}". Tu parte pendiente es {{3}}, antes del {{4}}. Paga cuando puedas y márcalo en la app Saath. Gracias. |
-| French (`fr`) | Bonjour {{1}}, rappel de Saath pour « {{2}} ». Votre part due est de {{3}}, avant le {{4}}. Payez dès que possible et indiquez-le dans l'application Saath. Merci. |
-| Portuguese (`pt_BR`) | Olá {{1}}, lembrete do Saath para "{{2}}". Sua parte em aberto é {{3}}, até {{4}}. Pague quando puder e registre no app Saath. Obrigado. |
+| Spanish (`es`) | Hola {{1}}, te recordamos desde Bengu para "{{2}}". Tu parte pendiente es {{3}}, antes del {{4}}. Paga cuando puedas y márcalo en la app Bengu. Gracias. |
+| French (`fr`) | Bonjour {{1}}, rappel de Bengu pour « {{2}} ». Votre part due est de {{3}}, avant le {{4}}. Payez dès que possible et indiquez-le dans l'application Bengu. Merci. |
+| Portuguese (`pt_BR`) | Olá {{1}}, lembrete do Bengu para "{{2}}". Sua parte em aberto é {{3}}, até {{4}}. Pague quando puder e registre no app Bengu. Obrigado. |
 
 6. In **Supabase → strategyarena → Edge Functions → Secrets**, add:
    - `WHATSAPP_TOKEN`: the permanent token
    - `WHATSAPP_PHONE_NUMBER_ID`: the ID from API Setup
 
-If a language version isn't approved yet, Saath falls back to the English template automatically. Meta charges a small fee per utility message, which depends on the recipient's country.
+If a language version isn't approved yet, Bengu falls back to the English template automatically. Meta charges a small fee per utility message, which depends on the recipient's country.
 
 ## 6. Turn on email reminders for everyone
 
 Your Resend account currently sends from `onboarding@resend.dev`. Resend only delivers mail from that address to the account owner's own inbox.
 
 1. In **resend.com → Domains**, add `macronations.com` and add the DNS records it shows.
-2. In Supabase Edge Function secrets, add `SAATH_EMAIL_FROM` with the value `Saath <saath@macronations.com>`.
+2. In Supabase Edge Function secrets, add `SAATH_EMAIL_FROM` with the value `Bengu <saath@macronations.com>`.
 
 ## 7. Turn on bill scanning
 
@@ -129,10 +129,10 @@ Cost is roughly ₹1–2 for a one-page bill, and more for long scanned PDFs, si
 
 ## Good to know
 
-- **Saath shares sign-in with your course apps.** Saath users appear in strategyarena's Auth user list, and an existing MacroNations login also works in Saath. Course data stays invisible to Saath, and the reverse.
-  - Saath creates its own accounts, which skips the course-branded confirmation email.
-  - Saath sends its own password-reset codes.
-  - Deleting a Saath account never removes a course login.
+- **Bengu shares sign-in with your course apps.** Bengu users appear in strategyarena's Auth user list, and an existing MacroNations login also works in Bengu. Course data stays invisible to Bengu, and the reverse.
+  - Bengu creates its own accounts, which skips the course-branded confirmation email.
+  - Bengu sends its own password-reset codes.
+  - Deleting a Bengu account never removes a course login.
 - **Adding a language:** copy `src/lib/strings.hi.ts`, translate it, and add it in `src/lib/strings.ts`.
 - **Your live course projects were not changed,** except two standard Supabase extensions enabled in strategyarena: `pg_cron` (for the daily job) and `pg_net` (to call the reminder function).
 

@@ -1,4 +1,4 @@
-// App admin console (owner only). English-only on purpose: it is a tool for the people who run Saath.
+// App admin console (owner only). English-only on purpose: it is a tool for the people who run Bengu.
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 import { Avatar, Banner, Button, Card, Chips, Empty, Field, Icon, Loading, Pill, Row, Screen, Section, Segmented, Sheet, Toggle, hashTone } from "../components/ui";
@@ -26,7 +26,7 @@ export default function Admin() {
     );
   }
   return (
-    <Screen title="Admin console" subtitle="Saath · run the app" scroll={false} padded={false}>
+    <Screen title="Admin console" subtitle="Bengu · run the app" scroll={false} padded={false}>
       <View style={{ paddingHorizontal: S.lg, paddingBottom: S.sm }}>
         <Segmented value={tab} onChange={setTab} options={[
           { value: "overview", label: "Home" }, { value: "circles", label: "Circles" }, { value: "plans", label: "Plans" },
@@ -94,7 +94,7 @@ function OverviewTab({ goTab }: { goTab: (t: Tab) => void }) {
       {credit ? <Banner tone="owe" icon="card-outline" text="Anthropic credit has run out, so bill reading is failing. Add credit at console.anthropic.com → Billing." /> : null}
       {req.length ? (
         <Pressable onPress={() => goTab("plans")}>
-          <Banner tone="primary" icon="sparkles-outline" text={`${req.length} circle${req.length > 1 ? "s" : ""} asked for Saath Plus. Open Plans to grant or decline.`} />
+          <Banner tone="primary" icon="sparkles-outline" text={`${req.length} circle${req.length > 1 ? "s" : ""} asked for Bengu Plus. Open Plans to grant or decline.`} />
         </Pressable>
       ) : null}
       {cfg.scan_enabled === false ? <Banner tone="pending" icon="pause-circle-outline" text="Bill reading is switched off (Settings → Features)." /> : null}
@@ -142,15 +142,15 @@ function OverviewTab({ goTab }: { goTab: (t: Tab) => void }) {
         <Section title="Where visitors come from · 30 days">
           <View style={{ flexDirection: "row", gap: S.md }}>
             <Stat icon="school-outline" label="From MacroNations" value={String(mn?.visits_30d ?? 0)} sub={`${mn?.visitors_30d ?? 0} people · ${mn?.signups_30d ?? 0} sign-ups`} />
-            <Stat icon="person-add-outline" label="New Saath users" value={String(traffic.signups_30d)} sub={`${traffic.signups_total} in total`} />
+            <Stat icon="person-add-outline" label="New Bengu users" value={String(traffic.signups_30d)} sub={`${traffic.signups_total} in total`} />
           </View>
           <Card style={{ paddingVertical: 4 }}>
             {traffic.by_source.length ? traffic.by_source.map((x, i) => (
               <Row key={x.source} title={x.source} subtitle={`${x.visitors_30d} people · ${x.signups_30d} sign-ups (30 d) · ${x.signups_all} sign-ups all time`} last={i === traffic.by_source.length - 1}
                 right={<Text style={[T.body, { color: C.ink, fontWeight: "700" }]}>{x.visits_30d}</Text>} />
-            )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No visits recorded yet. Visits are counted on the Saath web pages (about, guide and the web app).</Text>}
+            )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No visits recorded yet. Visits are counted on the Bengu web pages (about, guide and the web app).</Text>}
           </Card>
-          <Text style={[T.tiny, { color: C.ink3 }]}>Counted by Saath itself: no IP addresses, no cookies, no outside analytics. Clicks on the Saath button are also counted on macronations.com (its Analytics tab).</Text>
+          <Text style={[T.tiny, { color: C.ink3 }]}>Counted by Bengu itself: no IP addresses, no cookies, no outside analytics. Clicks on the Bengu button are also counted on macronations.com (its Analytics tab).</Text>
         </Section>
       ) : null}
 
@@ -240,7 +240,7 @@ function CircleSheet({ circle, onClose, onSaved }: { circle: AdminCircle | null;
   };
   const grant = async (months: number) => {
     if (!circle) return;
-    const q = months > 0 ? `Give "${circle.name}" Saath Plus for ${months} month${months > 1 ? "s" : ""}?` : `Remove Saath Plus from "${circle.name}"?`;
+    const q = months > 0 ? `Give "${circle.name}" Bengu Plus for ${months} month${months > 1 ? "s" : ""}?` : `Remove Bengu Plus from "${circle.name}"?`;
     if (!(await confirm(months > 0 ? "Grant Plus" : "Revoke Plus", q + (months > 0 ? " Time is added to any Plus it already has, and its AI allowance is raised to its region's Plus allowance." : ""), months > 0 ? "Grant" : "Revoke", "Cancel", months <= 0))) return;
     setBusy(true);
     try { await adminGrantPlus(circle.id, months, "admin console"); onSaved(); }
@@ -252,7 +252,7 @@ function CircleSheet({ circle, onClose, onSaved }: { circle: AdminCircle | null;
         <Chips value={ai} onChange={setAi} options={[{ value: "auto", label: "Auto (by plan)" }, { value: "on", label: "Always on" }, { value: "off", label: "Off" }]} />
         <Text style={[T.tiny, { color: C.ink3 }]}>Off wins over everything, including Plus. Always on gives AI for free (e.g. your own family). Auto follows the plan and the free trial.</Text>
       </Section>
-      <Section title="Saath Plus">
+      <Section title="Bengu Plus">
         <Text style={[T.small, { color: C.ink2 }]}>
           {circle?.plus_active ? `Active${circle.plus_until ? ` until ${dateLabel(circle.plus_until, lang, true)}` : ""}${circle.plus_source ? ` · ${circle.plus_source}` : ""}` : `Not active · ${circle?.ai_trial_used ?? 0} trial reads used`}
           {circle?.wants_plus ? " · asked for Plus" : ""}
@@ -292,7 +292,7 @@ function PlansTab({ goTab }: { goTab: (t: Tab) => void }) {
   const { req, prices, cfg } = data;
   const grant = async (r: AdminRequest) => {
     const m = PERIOD_MONTHS[r.period] ?? 1;
-    if (!(await confirm("Grant Plus", `Give "${r.circle}" Saath Plus for ${m} month${m > 1 ? "s" : ""}? Do this after they have paid you.`, "Grant", "Cancel"))) return;
+    if (!(await confirm("Grant Plus", `Give "${r.circle}" Bengu Plus for ${m} month${m > 1 ? "s" : ""}? Do this after they have paid you.`, "Grant", "Cancel"))) return;
     try { await adminGrantPlus(r.circle_id, m, `request ${r.period} ${r.price_text ?? ""}`.trim()); reload(); } catch (e) { notify("Couldn't grant", errText(e)); }
   };
   const decline = async (r: AdminRequest) => {
@@ -320,7 +320,7 @@ function PlansTab({ goTab }: { goTab: (t: Tab) => void }) {
                 <Button small kind="ghost" label="Decline" onPress={() => decline(r)} />
               </View>
             </View>
-          )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No open requests. When someone taps "Request Saath Plus" in a circle, it shows here. Until a payment provider is connected, collect payment yourself and then grant.</Text>}
+          )) : <Text style={[T.small, { color: C.ink3, padding: S.md }]}>No open requests. When someone taps "Request Bengu Plus" in a circle, it shows here. Until a payment provider is connected, collect payment yourself and then grant.</Text>}
         </Card>
       </Section>
 
@@ -420,7 +420,7 @@ const META: Record<string, Meta> = {
   scan_enabled:          { group: "features", kind: "bool", label: "AI bill reading", hint: "Off: people type bills in by hand" },
   bill_check_ai_enabled: { group: "features", kind: "bool", label: "AI in Bill Check", hint: "Off: only the free rule checks run" },
   price_web_enabled:     { group: "features", kind: "bool", label: "Web price search", hint: "Compares top items with online prices (costs more)" },
-  ai_paid_enabled:       { group: "features", kind: "bool", label: "Charge for AI (Saath Plus)", hint: "Off: AI is free for every circle. On: circles without Plus get the free trial, then manual entry" },
+  ai_paid_enabled:       { group: "features", kind: "bool", label: "Charge for AI (Bengu Plus)", hint: "Off: AI is free for every circle. On: circles without Plus get the free trial, then manual entry" },
   free_ai_trial_scans:   { group: "limits", kind: "number", label: "Free AI reads per circle (trial)", hint: "Used only when charging for AI is on" },
   daily_cap_usd:         { group: "limits", kind: "number", label: "Daily AI cap, whole app (USD)" },
   scan_per_user_day:     { group: "limits", kind: "number", label: "Scans per person per day" },
@@ -461,7 +461,7 @@ function SettingsTab() {
       }
     }
     const paidOn = changed.find((r) => r.key === "ai_paid_enabled" && draft[r.key] === true);
-    if (paidOn && !(await confirm("Start charging for AI?", "Circles without Saath Plus will get the free trial reads, then must enter bills by hand. Give your own circles Plus or set their AI to \"Always on\" first (Circles tab).", "Start charging", "Cancel"))) return;
+    if (paidOn && !(await confirm("Start charging for AI?", "Circles without Bengu Plus will get the free trial reads, then must enter bills by hand. Give your own circles Plus or set their AI to \"Always on\" first (Circles tab).", "Start charging", "Cancel"))) return;
     setBusy(true);
     try {
       for (const r of changed) await adminSetConfig(r.key, typeof r.value === "number" ? Number(draft[r.key]) : draft[r.key]);

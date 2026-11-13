@@ -1,7 +1,7 @@
 import { getLocales } from "expo-localization";
 import { supabase } from "./supabase";
 
-/** Saath Plus: who has AI, regional prices, and asking for an upgrade (migration 014).
+/** Bengu Plus: who has AI, regional prices, and asking for an upgrade (migration 014).
  *  Until a payment provider is connected, a request lands in the admin console and the admin grants Plus by hand. */
 export type AiAccess = {
   enabled: boolean;

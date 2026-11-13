@@ -73,7 +73,7 @@ export default function Profile() {
         <Button kind="secondary" icon="log-out-outline" label={t("sign_out")} onPress={signOut} />
         <Button kind="danger" icon="trash-outline" label={t("delete_account")} onPress={del} />
       </View>
-      <Text style={[T.tiny, { color: C.ink3, textAlign: "center" }]}>Saath {Constants.expoConfig?.version} · MacroNations LLC</Text>
+      <Text style={[T.tiny, { color: C.ink3, textAlign: "center" }]}>Bengu {Constants.expoConfig?.version} · MacroNations LLC</Text>
     </Screen>
   );
 }

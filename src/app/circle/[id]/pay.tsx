@@ -65,7 +65,7 @@ export default function Pay() {
   if (!s) return <Loading />;
   const cur = s.circle.currency;
   const amt = parseAmount(amount);
-  const note = `${s.circle.name} · Saath`;
+  const note = `${s.circle.name} · Bengu`;
   const goPayees = () => router.push({ pathname: "/circle/[id]/payees", params: { id } });
   const country = (s.circle.country || "").toUpperCase();
   const here = payCountry(null);

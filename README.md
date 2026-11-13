@@ -1,13 +1,13 @@
-# Saath (साथ)
+# Bengu (साथ)
 
-Saath helps any group share costs over weeks, months or years: a parent's medical care, elder care, education, a household, a trip, a wedding, a club, a building project, a fundraiser, a funeral or a pet. Everything is free; AI bill reading is an optional paid add-on per circle (Saath Plus).
+Bengu helps any group share costs over weeks, months or years: a parent's medical care, elder care, education, a household, a trip, a wedding, a club, a building project, a fundraiser, a funeral or a pet. Everything is free; AI bill reading is an optional paid add-on per circle (Bengu Plus).
 
 - **Every bill in one place.** Add a bill with a photo or PDF of the receipt. The amount is split automatically.
 - **Shares each person chooses.** Use any percentages, equal or not. A single bill can be split differently when needed.
 - **Two ways to share costs.** Split each actual bill, or set a fixed amount per period (for example ₹60,000 a month for a nurse).
 - **Billing periods.** Weekly, fortnightly, monthly or quarterly, each with a due day. There's a statement for any date range, exportable as PDF or CSV.
 - **Reminders on WhatsApp and email.** These go out automatically each period in the member's own language. The organiser can also send them on demand, or nudge one person on WhatsApp in a single tap.
-- **Pay any free or low-cost way.** UPI, Wise, Remitly, Zelle, PayPal, Revolut, Venmo, Cash App, SEPA, Indian or international bank transfer, M-Pesa, Pix or cash. Money goes straight to the person or hospital you choose. Saath only shows the payment details and opens the payer's app.
+- **Pay any free or low-cost way.** UPI, Wise, Remitly, Zelle, PayPal, Revolut, Venmo, Cash App, SEPA, Indian or international bank transfer, M-Pesa, Pix or cash. Money goes straight to the person or hospital you choose. Bengu only shows the payment details and opens the payer's app.
 - **Trust built in.** Payments can need the organiser's confirmation. Someone who pays a bill from their own pocket is credited automatically. There's a full activity log, a reminder log and reimbursements.
 - **Family members without the app** can still be added and reminded. They can claim their place later.
 - **Insights.** 12-month spend vs paid-in chart, category split (all time / 90 days), who has paid what against their agreed share, top sellers, largest bills, record health, CSV export.
@@ -39,18 +39,18 @@ The backend lives in the Supabase project **strategyarena** (`qgelvmefyexyzpwqup
 - There are four edge functions: `saath-signup`, `saath-reset`, `saath-remind` and `saath-account`.
 - A daily job, `saath-daily-reminders`, runs at 13:23 UTC (6:53 pm in India, 8:23 am in New York).
 
-To move Saath to its own project later, run the five migration files in order on the new project, deploy the four functions, and change `extra.supabaseUrl` and `extra.supabaseKey` in `app.json`.
+To move Bengu to its own project later, run the five migration files in order on the new project, deploy the four functions, and change `extra.supabaseUrl` and `extra.supabaseKey` in `app.json`.
 
-## How Saath uses AI and what it costs
+## How Bengu uses AI and what it costs
 
-Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-fill the form) and **Bill Check** (looking for signs a bill is wrong). Every call is logged with its cost in `saath_ai_usage`; view `saath_ai_v_daily` shows spend per day, function and model.
+Bengu calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-fill the form) and **Bill Check** (looking for signs a bill is wrong). Every call is logged with its cost in `saath_ai_usage`; view `saath_ai_v_daily` shows spend per day, function and model.
 
 **Reading a bill.** Claude Haiku (cheap) reads every file first. Claude Sonnet takes a second look at the amounts only when it isn't safe to trust Haiku alone: Haiku isn't confident, the bill is handwritten or in an Indian script, the numbers don't add up, or nothing was found. In tests Haiku and Sonnet agreed on handwritten amounts except one photo where both were unsure, so handwritten and Indian-script bills always get the Sonnet check (settings `haiku_handwritten`, `haiku_indic`). If both are unsure, the app shows the amount as low confidence for the family to check. It never guesses.
 
 **Bill Check.** It runs cheapest first:
 1. Rules in code, which are free: arithmetic, above-MRP prices, expired stock, the GSTIN checksum, duplicates, dates and the patient name.
 2. The read from the scan is reused, so the file isn't read twice. A full Sonnet forensic read happens only when someone taps "Check again" on a bill of ₹10,000 or more (`escalate_amount`), a poor copy, or a bill that doesn't add up.
-3. Prices are first compared with what other Saath users paid locally, which is free. A web search runs only for the top 3 items of ₹500 or more, at most 2 searches, and only when local data is thin. Results are cached for 30 days and shared across circles. Web search never runs on the automatic check after adding a bill. When `SAATH_BILL_CHECK_PAID=true`, it runs only on the paid plan.
+3. Prices are first compared with what other Bengu users paid locally, which is free. A web search runs only for the top 3 items of ₹500 or more, at most 2 searches, and only when local data is thin. Results are cached for 30 days and shared across circles. Web search never runs on the automatic check after adding a bill. When `SAATH_BILL_CHECK_PAID=true`, it runs only on the paid plan.
 
 **Cost per bill** (one phone photo, read and automatically checked; measured November 2026):
 
@@ -72,10 +72,10 @@ Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-f
 
 **Quality test.** `eval/compare.py` compares Haiku against Sonnet on a test set and fails if handwritten or Indian-language amounts differ. Run it again whenever models or prompts change.
 
-## Saath Plus (AI as a paid add-on)
+## Bengu Plus (AI as a paid add-on)
 
 - **Free forever:** circles, members, bills, splits, receipts, reminders, payments, statements, basic Bill Check rules, Insights and agreements.
-- **Saath Plus (per circle, not per person):** AI bill reading, multi-page PDF splitting, deep Bill Check (line items, tampering, price checks).
+- **Bengu Plus (per circle, not per person):** AI bill reading, multi-page PDF splitting, deep Bill Check (line items, tampering, price checks).
 - **Prices** are regional (table `saath_pricing`, editable in the admin console). Examples: US $3.99/mo · $29.99/yr · $8.99 for a 90-day pass; UK £3.49; EU €3.99; India ₹149/mo · ₹999/yr · ₹349 pass; everywhere else $2.49. Each tier also sets the Plus circle's monthly AI allowance (A $4, B $3, C $1.50, D $1).
 - **Who gets AI** (`saath_circle_ai_status`): admin switch Off → off; admin switch Always on → on; Plus active → on; charging off (`ai_paid_enabled = false`, the default) → on for everyone; otherwise the free trial (`free_ai_trial_scans`, default 10 reads per circle), then manual entry.
 - **Payments are not connected yet.** "Request Plus" in a circle sends a request to the admin console (Plans tab). Collect payment yourself, then press Grant. When a payment provider is added, it only needs to call the same grant function.
@@ -83,7 +83,7 @@ Saath calls Anthropic's Claude in two places: **reading a bill** (scan, to pre-f
 
 ## Public pages and the user guide
 
-These are plain HTML files in `public/`, published with the web app at saath.macronations.com:
+These are plain HTML files in `public/`, published with the web app at bengu.macronations.com:
 
 | Page | File | What it is |
 | --- | --- | --- |
@@ -91,17 +91,17 @@ These are plain HTML files in `public/`, published with the web app at saath.mac
 | `/guide.html` | `public/guide.html` | The user guide (manual), screen by screen |
 | `/privacy.html` | `public/privacy.html` | Privacy policy |
 
-**Keep the guide current.** Every change to how Saath works must update `public/guide.html` in the same change:
+**Keep the guide current.** Every change to how Bengu works must update `public/guide.html` in the same change:
 1. edit the section that describes the screen or feature (section ids such as `#money-trail` are linked from the app, so keep them);
 2. add a dated line at the top of "What's new";
 3. use the exact button and screen names the app shows (from `src/lib/strings.en.ts`).
 
-The app links to the guide from Profile ("How to use Saath") and to the landing page from the welcome screen (`extra.guideUrl` and `extra.aboutUrl` in `app.json`).
+The app links to the guide from Profile ("How to use Bengu") and to the landing page from the welcome screen (`extra.guideUrl` and `extra.aboutUrl` in `app.json`).
 
 ## Where visitors come from
 
-- **macronations.com** has a small "Saath ↗" link beside "About MacroNations" at the bottom of the course portal, and a "Saath · also from MacroNations" pill in the site footer. Each click is logged in MacroNations' own `page_views` table (course `saath`, event `open`) and shows on its super-admin Analytics tab as "Saath Opens". The link carries `utm_source=macronations`, `utm_medium=portal|footer` and the MacroNations session id (`mn_sid`).
-- **Saath** counts its own visits with `public/saath-track.js` (about and guide pages) and `src/lib/visits.ts` (web app): source, medium, page, `mn_sid` and a random browser id. It uses no IP address, cookies or outside analytics (migration 016, table `saath_visits`). When a visitor creates a Saath account, the source is saved once in `saath_signup_sources`.
+- **macronations.com** has a small "Bengu ↗" link beside "About MacroNations" at the bottom of the course portal, and a "Bengu · also from MacroNations" pill in the site footer. Each click is logged in MacroNations' own `page_views` table (course `saath`, event `open`) and shows on its super-admin Analytics tab as "Bengu Opens". The link carries `utm_source=macronations`, `utm_medium=portal|footer` and the MacroNations session id (`mn_sid`).
+- **Bengu** counts its own visits with `public/saath-track.js` (about and guide pages) and `src/lib/visits.ts` (web app): source, medium, page, `mn_sid` and a random browser id. It uses no IP address, cookies or outside analytics (migration 016, table `saath_visits`). When a visitor creates a Bengu account, the source is saved once in `saath_signup_sources`.
 - The admin console's Home tab shows "Where visitors come from · 30 days": visits, people and sign-ups by source.
 
 ## Admin console

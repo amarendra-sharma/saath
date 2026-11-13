@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
 
-// Saath palette: deep navy + refined gold on cool neutrals. All text pairs meet WCAG AA (4.5:1).
+// Bengu palette: deep navy + refined gold on cool neutrals. All text pairs meet WCAG AA (4.5:1).
 export const C = {
   bg: "#F4F6FA",
   card: "#FFFFFF",

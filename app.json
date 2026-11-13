@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Saath",
+    "name": "Bengu",
     "slug": "saath",
     "scheme": "saath",
     "version": "1.0.0",
@@ -16,8 +16,8 @@
       "bundleIdentifier": "com.macronations.saath",
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Saath uses the camera to photograph bills and receipts.",
-        "NSPhotoLibraryUsageDescription": "Saath lets you attach bills and receipts from your photos.",
+        "NSCameraUsageDescription": "Bengu uses the camera to photograph bills and receipts.",
+        "NSPhotoLibraryUsageDescription": "Bengu lets you attach bills and receipts from your photos.",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
@@ -42,8 +42,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Saath lets you attach bills and receipts from your photos.",
-          "cameraPermission": "Saath uses the camera to photograph bills and receipts."
+          "photosPermission": "Bengu lets you attach bills and receipts from your photos.",
+          "cameraPermission": "Bengu uses the camera to photograph bills and receipts."
         }
       ],
       [
@@ -61,9 +61,9 @@
     "extra": {
       "supabaseUrl": "https://qgelvmefyexyzpwqupev.supabase.co",
       "supabaseKey": "sb_publishable_fiT8iohvTZFUZ7vTlYpOvQ_9NPLPcIa",
-      "privacyUrl": "https://saath.macronations.com/privacy.html",
-      "guideUrl": "https://saath.macronations.com/guide.html",
-      "aboutUrl": "https://saath.macronations.com/about.html"
+      "privacyUrl": "https://bengu.macronations.com/privacy.html",
+      "guideUrl": "https://bengu.macronations.com/guide.html",
+      "aboutUrl": "https://bengu.macronations.com/about.html"
     },
     "description": "Share the cost of caring for someone \u2014 bills, receipts, percentage splits and reminders for families."
   }

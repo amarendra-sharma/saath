@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 import { supabase } from "./supabase";
 
 /** Web only: where visitors come from (the about/guide pages set this up — see public/saath-track.js).
- *  Counts an app visit once per browser session, and credits a NEW Saath user to the link that brought them. */
+ *  Counts an app visit once per browser session, and credits a NEW Bengu user to the link that brought them. */
 const ls = (k: string, v?: string) => {
   try { if (v === undefined) return window.localStorage.getItem(k); window.localStorage.setItem(k, v); } catch { /* private mode */ }
   return null;
@@ -37,7 +37,7 @@ export function trackAppVisit() {
   supabase.rpc("saath_track_visit", { p_source: s?.source ?? "direct", p_medium: s?.medium ?? "", p_page: "/app", p_mn_sid: s?.mn_sid ?? "", p_visitor: visitor() }).then(() => {}, () => {});
 }
 
-/** After sign-in: the server ignores this unless the Saath profile is new (under 3 days), so it is safe to call each time. */
+/** After sign-in: the server ignores this unless the Bengu profile is new (under 3 days), so it is safe to call each time. */
 export function attributeSignup(userId: string) {
   if (Platform.OS !== "web" || ls("saath_attr_" + userId)) return;
   const s = source();
@@ -47,6 +47,6 @@ export function attributeSignup(userId: string) {
 }
 
 export const guideUrl = (section?: string) => {
-  const base = String((Constants.expoConfig?.extra as any)?.guideUrl ?? "https://saath.macronations.com/guide.html");
+  const base = String((Constants.expoConfig?.extra as any)?.guideUrl ?? "https://bengu.macronations.com/guide.html");
   return section ? `${base}#${section}` : base;
 };

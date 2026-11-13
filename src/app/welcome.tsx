@@ -64,7 +64,7 @@ export default function Welcome() {
           </View>
           <View>
             <Text style={[T.hero, { color: C.white }]}>{t("app_name")}</Text>
-            <Text style={[T.small, { color: "rgba(255,255,255,0.75)" }]}>साथ · together</Text>
+            <Text style={[T.small, { color: "rgba(255,255,255,0.75)" }]}>by MacroNations</Text>
           </View>
         </View>
         <Text style={[T.h2, { color: C.white, fontWeight: "600", lineHeight: 28, marginTop: S.md }]}>{t("tagline")}</Text>
@@ -77,7 +77,7 @@ export default function Welcome() {
               </View>
             ))}
             <Text style={[T.small, { color: C.gold, fontWeight: "700", marginTop: 4 }]} accessibilityRole="link"
-              onPress={() => openUrl(String((Constants.expoConfig?.extra as any)?.aboutUrl ?? "https://saath.macronations.com/about.html"))}>{t("see_how_it_works")} →</Text>
+              onPress={() => openUrl(String((Constants.expoConfig?.extra as any)?.aboutUrl ?? "https://bengu.macronations.com/about.html"))}>{t("see_how_it_works")} →</Text>
           </View>
         ) : null}
       </View>

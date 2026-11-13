@@ -27,7 +27,7 @@ if (Platform.OS !== "web") {
 
 export const RECEIPTS_BUCKET = "saath-receipts";
 
-/** Call one of Saath's edge functions; returns parsed JSON or throws with the server's error code. */
+/** Call one of Bengu's edge functions; returns parsed JSON or throws with the server's error code. */
 export async function callFn<T = any>(name: string, body: unknown, authed = false): Promise<T> {
   const headers: Record<string, string> = { "Content-Type": "application/json", apikey: SUPABASE_KEY };
   if (authed) {

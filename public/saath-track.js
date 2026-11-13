@@ -1,4 +1,4 @@
-/* Saath: where visitors come from. First-party only — no cookies, no IP, no third-party analytics.
+/* Bengu: where visitors come from. First-party only — no cookies, no IP, no third-party analytics.
  * Records source/medium (e.g. utm_source=macronations&utm_medium=footer), the page, the MacroNations
  * session id when the visitor came from macronations.com, and a random browser id for unique counts.
  * The first source is remembered for 30 days so the app can credit a sign-up to it (see saath_attribute_me). */
