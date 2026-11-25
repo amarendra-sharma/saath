@@ -13,7 +13,7 @@ Bengu helps any group share costs over weeks, months or years: a parent's medica
 - **Insights.** 12-month spend vs paid-in chart, category split (all time / 90 days), who has paid what against their agreed share, top sellers, largest bills, record health, CSV export.
 - **Circle agreement.** The organiser publishes a short agreement built from the circle's own settings (shares, period, due day) plus their rules (large-cost limit, late reminder, notice to leave, a mediator, extra terms). Members sign by typing their name; each signature stores the time and a SHA-256 fingerprint of the exact text. Versions, PDF export. It is an electronic record of consent, not legal advice.
 - **Twelve circle types** with their own categories: medical, elder care, education, household, trip, event, project, club/community, fundraiser, funeral/memorial, pets, other.
-- **Six languages:** English, हिन्दी, বাংলা, Español, Français, Português.
+- **Seven languages:** English, हिन्दी, বাংলা, नेपाली, Español, Français, Português.
 - **One codebase for iPhone, Android and the web** (Expo SDK 58 / React Native 0.88). The backend is Supabase.
 
 ## Folder layout

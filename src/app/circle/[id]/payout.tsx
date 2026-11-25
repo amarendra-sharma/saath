@@ -12,7 +12,7 @@ import { C, R, S, T } from "../../../lib/theme";
 import { Trail, TrailBill, loadTrail, recordPayout } from "../../../lib/trail";
 import { LocalFile, uploadFile } from "../../../lib/upload";
 
-const METHODS = ["upi", "bank_in", "bank_intl", "cash", "card", "cheque", "other"];
+const methodsFor = (cur: string) => [...(cur === "NPR" ? ["esewa", "khalti", "bank_np"] : ["upi", "bank_in"]), "bank_intl", "cash", "card", "cheque", "other"];
 const shift = (iso: string, d: number) => { const x = new Date(iso + "T00:00:00"); x.setDate(x.getDate() + d); return x.toISOString().slice(0, 10); };
 
 /** Record money paid OUT of the pool to a hospital, pharmacy or other provider, and which bills it paid. */
@@ -42,6 +42,7 @@ export default function PayoutScreen() {
     // default: the payee that is me, else the first one I may record for
     const mine = s.payees.find((p) => p.member_id === s.me && tr.can_record.includes(p.id));
     setPayee((v) => v ?? mine?.id ?? tr.can_record[0] ?? null);
+    if (s.circle.currency === "NPR") setMethod((m) => (m === "upi" ? "esewa" : m));
     if (eid && tr.bills.some((b) => b.id === eid)) {
       setPicked(new Set([eid]));
       const b = tr.bills.find((x) => x.id === eid);
@@ -146,7 +147,7 @@ export default function PayoutScreen() {
       </View>
       <View style={{ gap: S.sm }}>
         <Text style={[T.small, { color: C.ink2, fontWeight: "600" }]}>{t("po_how_paid")}</Text>
-        <Chips value={method} onChange={setMethod} options={METHODS.map((k) => ({ value: k, label: k === "card" ? t("po_card") : k === "cheque" ? t("po_cheque") : methodDef(k).name, icon: k === "card" ? "card-outline" : k === "cheque" ? "document-outline" : methodDef(k).icon }))} />
+        <Chips value={method} onChange={setMethod} options={methodsFor(cur).map((k) => ({ value: k, label: k === "card" ? t("po_card") : k === "cheque" ? t("po_cheque") : methodDef(k).name, icon: k === "card" ? "card-outline" : k === "cheque" ? "document-outline" : methodDef(k).icon }))} />
       </View>
       <Field label={t("po_reference")} value={reference} onChangeText={setReference} placeholder={t("po_reference_ph")} autoCapitalize="characters" maxLength={120} />
       <View style={{ borderWidth: 1, borderColor: proof.length ? C.line : C.accent, borderRadius: R.md, padding: S.md, gap: S.sm, backgroundColor: proof.length ? C.card : C.accentSoft }}>

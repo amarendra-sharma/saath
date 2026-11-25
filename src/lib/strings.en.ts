@@ -970,5 +970,12 @@ export const en = {
   pot_label: "Sent to {name}, minus bills recorded",
   how_to_use: "How to use Bengu",
   see_how_it_works: "See how Bengu works",
+  region_nepal: "Nepal",
+  f_esewa_id: "eSewa ID (mobile number)",
+  f_khalti_id: "Khalti ID (mobile number)",
+  f_branch: "Branch",
+  how_esewa: "Open eSewa, choose Send Money (eSewa to eSewa), enter the eSewa ID above and send {amount}. Put the circle name in Remarks.",
+  how_khalti: "Open Khalti, choose Send Money (Khalti to Khalti), enter the Khalti ID above and send {amount}. Put the circle name in Remarks.",
+  how_bank_np: "Copy the details into your bank's mobile app or connectIPS and send {amount}. Put the circle name in Remarks.",
 };
 export type StringKey = keyof typeof en;

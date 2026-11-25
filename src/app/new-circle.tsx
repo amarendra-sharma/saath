@@ -15,7 +15,7 @@ export default function NewCircle() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [purpose, setPurpose] = useState("medical");
-  const [currency, setCurrency] = useState(profile?.language === "hi" || profile?.language === "bn" ? "INR" : "INR");
+  const [currency, setCurrency] = useState(profile?.language === "ne" ? "NPR" : "INR");
   const [mode, setMode] = useState<"expenses" | "budget">("expenses");
   const [budget, setBudget] = useState("");
   const [period, setPeriod] = useState<"weekly" | "biweekly" | "monthly" | "quarterly">("monthly");

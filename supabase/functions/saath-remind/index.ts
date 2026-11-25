@@ -26,8 +26,8 @@ type Item = {
   mail: string | null; language: string; amount: number;
 };
 
-const LOCALE: Record<string, string> = { en: "en-IN", hi: "hi-IN", es: "es-ES", fr: "fr-FR", pt: "pt-BR", bn: "bn-IN" };
-const WA_LANG: Record<string, string> = { en: "en", hi: "hi", es: "es", fr: "fr", pt: "pt_BR", bn: "bn" };
+const LOCALE: Record<string, string> = { en: "en-IN", hi: "hi-IN", es: "es-ES", fr: "fr-FR", pt: "pt-BR", bn: "bn-IN", ne: "ne-NP" };
+const WA_LANG: Record<string, string> = { en: "en", hi: "hi", es: "es", fr: "fr", pt: "pt_BR", bn: "bn", ne: "ne" };
 
 const TXT: Record<string, { subject: (c: string) => string; body: (n: string, c: string, a: string, d: string, pay: string) => string }> = {
   en: {
@@ -54,8 +54,15 @@ const TXT: Record<string, { subject: (c: string) => string; body: (n: string, c:
     subject: (c) => `Bengu অনুস্মারক: ${c}-এ আপনার অংশ`,
     body: (n, c, a, d, pay) => `নমস্কার ${n},\n\n"${c}"-এর জন্য Bengu থেকে একটি অনুস্মারক।\nআপনার বকেয়া অংশ ${a} (${d}-এর মধ্যে)।\n${pay}\nপরিশোধের পর অনুগ্রহ করে Bengu অ্যাপে চিহ্নিত করুন যাতে সবাই দেখতে পান।\n\nপাশে থাকার জন্য ধন্যবাদ।\n— Bengu`,
   },
+  ne: {
+    subject: (c) => `Bengu रिमाइन्डर: ${c} मा तपाईंको हिस्सा`,
+    body: (n, c, a, d, pay) => `नमस्ते ${n},\n\n"${c}" का लागि Bengu बाट एउटा नम्र रिमाइन्डर।\nतपाईंको तिर्न बाँकी हिस्सा ${a} छ (${d} सम्म)।\n${pay}\nतिरेपछि सबैले देख्न सकून् भनेर कृपया Bengu एपमा चिनो लगाउनुहोस्।\n\nसाथ दिनुभएकोमा धन्यवाद।\n— Bengu`,
+  },
 };
-const PAY_HDR: Record<string, string> = { en: "You can pay to:", hi: "आप यहाँ भुगतान कर सकते हैं:", es: "Puedes pagar a:", fr: "Vous pouvez payer à :", pt: "Você pode pagar para:", bn: "আপনি এখানে পরিশোধ করতে পারেন:" };
+const PAY_HDR: Record<string, string> = { en: "You can pay to:", hi: "आप यहाँ भुगतान कर सकते हैं:", es: "Puedes pagar a:", fr: "Vous pouvez payer à :", pt: "Você pode pagar para:", bn: "আপনি এখানে পরিশোধ করতে পারেন:", ne: "तपाईं यहाँ तिर्न सक्नुहुन्छ:" };
+
+// shown when a payment method has no label of its own
+const MNAME: Record<string, string> = { esewa: "eSewa", khalti: "Khalti", bank_np: "Bank (Nepal)", bank_in: "Bank (India)", bank_intl: "Bank" };
 
 const lang2 = (l: string) => (TXT[(l || "en").slice(0, 2)] ? (l || "en").slice(0, 2) : "en");
 const money = (n: number, cur: string, l: string) => {
@@ -73,7 +80,7 @@ async function payHint(circleId: string, l: string) {
   const p = data?.[0] as any;
   if (!p) return "";
   const lines = (p.saath_pay_methods ?? []).slice(0, 3)
-    .filter((m: any) => m.handle).map((m: any) => `  • ${m.label || m.method.toUpperCase()}: ${m.handle}`);
+    .filter((m: any) => m.handle).map((m: any) => `  • ${m.label || MNAME[m.method] || m.method.toUpperCase()}: ${m.handle}`);
   return lines.length ? `\n${PAY_HDR[l]} ${p.name}\n${lines.join("\n")}\n` : "";
 }
 

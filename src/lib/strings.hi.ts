@@ -972,4 +972,11 @@ export const hi: Partial<Record<StringKey, string>> = {
   pot_label: "{name} को भेजा, दर्ज बिल घटाकर",
   how_to_use: "Bengu कैसे इस्तेमाल करें",
   see_how_it_works: "देखें Bengu कैसे काम करता है",
+  region_nepal: "नेपाल",
+  f_esewa_id: "eSewa ID (मोबाइल नंबर)",
+  f_khalti_id: "Khalti ID (मोबाइल नंबर)",
+  f_branch: "शाखा",
+  how_esewa: "eSewa ऐप खोलें, Send Money (eSewa to eSewa) चुनें, ऊपर दी गई eSewa ID डालें और {amount} भेजें। Remarks में समूह का नाम लिखें।",
+  how_khalti: "Khalti ऐप खोलें, Send Money (Khalti to Khalti) चुनें, ऊपर दी गई Khalti ID डालें और {amount} भेजें। Remarks में समूह का नाम लिखें।",
+  how_bank_np: "विवरण अपने बैंक के मोबाइल ऐप या connectIPS में कॉपी करें और {amount} भेजें। Remarks में समूह का नाम लिखें।",
 };

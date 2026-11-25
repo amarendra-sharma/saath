@@ -4,7 +4,7 @@ import { Text, View } from "react-native";
 import { Banner, Button, Card, Chips, Empty, Field, Icon, IconButton, Loading, Screen, Sheet, Toggle } from "../../../components/ui";
 import { confirm, notify, useApp } from "../../../lib/app";
 import { Payee, PayMethod, Summary, loadSummary, useLoad } from "../../../lib/data";
-import { METHODS, MethodKey, methodDef } from "../../../lib/payments";
+import { MethodKey, methodDef, methodsFor } from "../../../lib/payments";
 import { errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
 
@@ -85,7 +85,7 @@ export default function Payees() {
               </View>
             );
           })}
-          {admin ? <Button small kind="secondary" icon="add" label={t("add_pay_method")} onPress={() => setEditMethod({ payee_id: p.id, method: "upi", details: {} })} /> : null}
+          {admin ? <Button small kind="secondary" icon="add" label={t("add_pay_method")} onPress={() => setEditMethod({ payee_id: p.id, method: methodsFor(s.circle.currency)[0].key, details: {} })} /> : null}
         </Card>
       ))}
       <Banner tone="primary" icon="shield-checkmark-outline" text={t("payees_privacy")} />
@@ -102,8 +102,8 @@ export default function Payees() {
       </Sheet>
 
       <Sheet visible={!!editMethod} onClose={() => setEditMethod(null)} title={editMethod?.id ? t("edit_pay_method") : t("add_pay_method")}>
-        <Chips value={(editMethod?.method ?? "upi") as MethodKey} onChange={(v) => setEditMethod({ ...editMethod!, method: v })}
-          options={METHODS.map((m) => ({ value: m.key, label: m.name, icon: m.icon }))} />
+        <Chips value={(editMethod?.method ?? methodsFor(s.circle.currency)[0].key) as MethodKey} onChange={(v) => setEditMethod({ ...editMethod!, method: v })}
+          options={methodsFor(s.circle.currency).map((m) => ({ value: m.key, label: m.name, icon: m.icon }))} />
         {def ? <Text style={[T.tiny, { color: C.ok, fontWeight: "700" }]}>{t(def.costKey)} · {t(def.region)}</Text> : null}
         {def ? <Field label={t(def.handleLabelKey)} value={editMethod?.handle ?? ""} placeholder={def.handlePlaceholder} autoCapitalize="none"
           onChangeText={(v) => setEditMethod({ ...editMethod!, handle: v })} /> : null}

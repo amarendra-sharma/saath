@@ -1,5 +1,15 @@
-const LOCALES: Record<string, string> = { en: "en-IN", hi: "hi-IN", es: "es-ES", fr: "fr-FR", pt: "pt-BR", bn: "bn-IN" };
-export const localeFor = (lang: string) => LOCALES[lang] ?? "en-IN";
+const LOCALES: Record<string, string> = { en: "en-IN", hi: "hi-IN", es: "es-ES", fr: "fr-FR", pt: "pt-BR", bn: "bn-IN", ne: "ne-NP" };
+// Some browsers ship without Nepali (and other) date names and print "M11" for November.
+// Use the language's own locale only where the device really has it; otherwise English (India).
+const supported: Record<string, boolean> = {};
+function hasLocale(loc: string) {
+  if (!(loc in supported)) {
+    try { supported[loc] = !/M\d/.test(new Intl.DateTimeFormat(loc, { month: "long" }).format(new Date(2026, 10, 15))); }
+    catch { supported[loc] = false; }
+  }
+  return supported[loc];
+}
+export const localeFor = (lang: string) => { const l = LOCALES[lang] ?? "en-IN"; return hasLocale(l) ? l : "en-IN"; };
 
 export function money(n: number | string | null | undefined, currency = "INR", lang = "en", opts: { compact?: boolean } = {}) {
   const v = Number(n ?? 0);

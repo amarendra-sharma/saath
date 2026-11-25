@@ -11,7 +11,7 @@ export const READ_VERSION = 2;
 
 export const CATEGORIES = ["hospital", "doctor", "medicine", "tests", "nursing", "therapy", "equipment", "travel",
   "food", "rent", "utilities", "insurance", "fees", "event", "other"];
-const LANG_NAME: Record<string, string> = { en: "English", hi: "Hindi", bn: "Bengali", es: "Spanish", fr: "French", pt: "Portuguese" };
+const LANG_NAME: Record<string, string> = { en: "English", hi: "Hindi", bn: "Bengali", ne: "Nepali", es: "Spanish", fr: "French", pt: "Portuguese" };
 const MONEY_DOCS = ["bill", "payment_receipt", "settlement_summary", "deposit_receipt"];
 
 // ── tool: compact descriptions (every field is shown in the app or used by Bill Check rules)
@@ -90,7 +90,7 @@ Files may be photos, scans or PDFs; printed or handwritten; in any language or s
 Call record_bills exactly once with EVERY distinct document. Never answer in plain text.
 
 Amounts (most important):
-- amount = the final payable/paid total ("Grand total", "Net amount", "कुल", "মোট", "Total"), after discount, including tax. Not MRP, not subtotal.
+- amount = the final payable/paid total ("Grand total", "Net amount", "कुल", "जम्मा", "মোট", "Total"), after discount, including tax. Not MRP, not subtotal.
 - Read handwritten digits carefully. If two readings are plausible, choose the most likely, set confidence below "high" and say so in note.
 - confidence "high" only when the total is clearly legible and consistent with the items/words on the document.
 - Never invent amounts. If unreadable: amount 0, confidence "low".

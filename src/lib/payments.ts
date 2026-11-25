@@ -5,7 +5,7 @@ import { epcPayload, pixPayload, upiPayload } from "./qr";
 
 export type MethodKey =
   | "upi" | "bank_in" | "bank_intl" | "sepa" | "wise" | "paypal" | "revolut" | "zelle" | "venmo"
-  | "cashapp" | "remitly" | "western_union" | "mpesa" | "pix" | "cash" | "other";
+  | "cashapp" | "remitly" | "western_union" | "mpesa" | "pix" | "esewa" | "khalti" | "bank_np" | "cash" | "other";
 
 export type Field = { key: string; labelKey: string; placeholder?: string; keyboard?: "default" | "email-address" | "phone-pad" };
 
@@ -70,6 +70,14 @@ export const METHODS: MethodDef[] = [
     handleLabelKey: "f_account_or_iban", handlePlaceholder: "Account / IBAN",
     fields: [{ key: "account_name", labelKey: "f_account_name" }, { key: "swift", labelKey: "f_swift" }, { key: "routing", labelKey: "f_routing" }, { key: "bank", labelKey: "f_bank" }],
     howKey: "how_bank" },
+  { key: "esewa", name: "eSewa", icon: "wallet-outline", region: "region_nepal", costKey: "cost_free",
+    handleLabelKey: "f_esewa_id", handlePlaceholder: "98XXXXXXXX", howKey: "how_esewa" },
+  { key: "khalti", name: "Khalti", icon: "wallet-outline", region: "region_nepal", costKey: "cost_free",
+    handleLabelKey: "f_khalti_id", handlePlaceholder: "98XXXXXXXX", howKey: "how_khalti" },
+  { key: "bank_np", name: "Bank (Nepal)", icon: "business-outline", region: "region_nepal", costKey: "cost_free",
+    handleLabelKey: "f_account_no", handlePlaceholder: "Account number",
+    fields: [{ key: "account_name", labelKey: "f_account_name" }, { key: "bank", labelKey: "f_bank" }, { key: "branch", labelKey: "f_branch" }],
+    howKey: "how_bank_np" },
   { key: "mpesa", name: "M-Pesa", icon: "phone-portrait-outline", region: "region_africa", costKey: "cost_low",
     handleLabelKey: "f_phone_or_till", handlePlaceholder: "+2547… / till no.", howKey: "how_mpesa" },
   { key: "pix", name: "Pix", icon: "qr-code-outline", region: "region_brazil", costKey: "cost_free",
@@ -91,6 +99,13 @@ export const ABROAD = [
   { name: "Remitly", url: "https://www.remitly.com" },
   { name: "Western Union", url: "https://www.westernunion.com" },
 ];
+
+/** All methods, with the ones local to the circle's currency first (eSewa/Khalti for NPR, UPI for INR …). */
+const LOCAL_FIRST: Record<string, MethodKey[]> = { NPR: ["esewa", "khalti", "bank_np"], INR: ["upi", "bank_in"], EUR: ["sepa", "revolut"], BRL: ["pix"], KES: ["mpesa"], USD: ["zelle", "venmo", "cashapp"] };
+export function methodsFor(currency?: string | null) {
+  const first = LOCAL_FIRST[(currency ?? "").toUpperCase()] ?? [];
+  return [...first.map((k) => METHODS.find((m) => m.key === k)!), ...METHODS.filter((m) => !first.includes(m.key))];
+}
 
 export const methodDef = (k: string) => METHODS.find((m) => m.key === k) ?? METHODS[METHODS.length - 1];
 

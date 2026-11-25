@@ -636,4 +636,11 @@ export const es: Partial<Record<StringKey, string>> = {
   pot_label: "Enviado a {name}, menos facturas registradas",
   how_to_use: "Cómo usar Bengu",
   see_how_it_works: "Vea cómo funciona Bengu",
+  region_nepal: "Nepal",
+  f_esewa_id: "ID de eSewa (número de móvil)",
+  f_khalti_id: "ID de Khalti (número de móvil)",
+  f_branch: "Sucursal",
+  how_esewa: "Abre eSewa, elige Send Money (eSewa to eSewa), introduce el ID de eSewa de arriba y envía {amount}. Pon el nombre del círculo en Remarks.",
+  how_khalti: "Abre Khalti, elige Send Money (Khalti to Khalti), introduce el ID de Khalti de arriba y envía {amount}. Pon el nombre del círculo en Remarks.",
+  how_bank_np: "Copia los datos en la app de tu banco o en connectIPS y envía {amount}. Pon el nombre del círculo en Remarks.",
 };

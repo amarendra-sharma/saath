@@ -54,13 +54,14 @@ export default function Pay() {
       if (b > 0.5) setAmount(String(Math.round(b * 100) / 100));
       const p = s.payees[0];
       if (p) { setPayeeId(p.id); if (p.methods[0]) setMethod(p.methods[0].method); }
+      if (!p?.methods[0] && s.circle.currency === "NPR") setMethod("esewa");
     }
   }, [s]); // eslint-disable-line
 
   const methodOptions = useMemo(() => {
-    const keys = [...new Set([...(payee?.methods ?? []).map((m) => m.method), "upi", "wise", "bank_intl", "cash", "other"])];
+    const keys = [...new Set([...(payee?.methods ?? []).map((m) => m.method), ...(s?.circle.currency === "NPR" ? ["esewa", "khalti", "bank_np"] : ["upi"]), "wise", "bank_intl", "cash", "other"])];
     return keys.map((k) => ({ value: k, label: methodDef(k).name, icon: methodDef(k).icon }));
-  }, [payee]);
+  }, [payee, s?.circle.currency]);
 
   if (!s) return <Loading />;
   const cur = s.circle.currency;

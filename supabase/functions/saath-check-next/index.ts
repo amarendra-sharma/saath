@@ -26,7 +26,7 @@ const KEY = Deno.env.get("ANTHROPIC_API_KEY") ?? "";
 const PRICE_MODEL = Deno.env.get("SAATH_PRICE_MODEL") ?? HAIKU;
 const PAID_ENV = (Deno.env.get("SAATH_BILL_CHECK_PAID") ?? "false") === "true";
 const FN = Deno.env.get("SAATH_FN_NAME") ?? "saath-check";
-const LANG_NAME: Record<string, string> = { en: "English", hi: "Hindi", bn: "Bengali", es: "Spanish", fr: "French", pt: "Portuguese" };
+const LANG_NAME: Record<string, string> = { en: "English", hi: "Hindi", bn: "Bengali", ne: "Nepali", es: "Spanish", fr: "French", pt: "Portuguese" };
 const PRICED_CATEGORIES = ["hospital", "doctor", "medicine", "tests", "nursing", "therapy", "equipment"];
 
 type Sev = "high" | "medium" | "low" | "info";

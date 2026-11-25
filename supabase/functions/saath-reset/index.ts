@@ -24,6 +24,7 @@ const T: Record<string, { subject: string; body: (c: string) => string }> = {
   fr: { subject: "Votre code Bengu", body: (c) => `Votre code de réinitialisation Bengu est ${c}. Il expire dans 15 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.` },
   pt: { subject: "Seu código do Bengu", body: (c) => `Seu código para redefinir a senha do Bengu é ${c}. Ele expira em 15 minutos. Se você não pediu isso, ignore este e-mail.` },
   bn: { subject: "আপনার Bengu রিসেট কোড", body: (c) => `আপনার Bengu পাসওয়ার্ড রিসেট কোড ${c}। এটি ১৫ মিনিটে মেয়াদ শেষ হবে। আপনি অনুরোধ না করলে এই ই-মেইলটি উপেক্ষা করুন।` },
+  ne: { subject: "तपाईंको Bengu रिसेट कोड", body: (c) => `तपाईंको Bengu पासवर्ड रिसेट कोड ${c} हो। यो १५ मिनेटमा म्याद सकिन्छ। तपाईंले यो अनुरोध गर्नुभएको होइन भने यो इमेल बेवास्ता गर्नुहोस्।` },
 };
 
 async function sha(s: string) {
