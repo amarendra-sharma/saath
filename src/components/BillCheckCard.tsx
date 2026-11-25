@@ -36,7 +36,7 @@ export function BillCheckCard({ expenseId, check, currency, plan, onChange }: {
       if (r.ai?.limit_reached) {
         const e = r.ai.error;
         notify(e === "plus_required" ? t("bc_rules_only_t") : t("bc_limit_title"),
-          e === "plus_required" ? t("bc_rules_only_plus") : e === "ai_off_circle" ? t("err_ai_off_circle") : r.ai.message || t("err_ai_limit_reached"));
+          e === "plus_required" ? t("bc_rules_only_plus") : e === "ai_off_circle" ? t("err_ai_off_circle") : (r.ai.error && t("err_" + r.ai.error) !== "err_" + r.ai.error ? t("err_" + r.ai.error) : t("err_ai_limit_reached")));
       }
     }
     catch (e: any) {

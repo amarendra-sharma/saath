@@ -1,4 +1,4 @@
-# Bengu (साथ)
+# Bengu
 
 Bengu helps any group share costs over weeks, months or years: a parent's medical care, elder care, education, a household, a trip, a wedding, a club, a building project, a fundraiser, a funeral or a pet. Everything is free; AI bill reading is an optional paid add-on per circle (Bengu Plus).
 

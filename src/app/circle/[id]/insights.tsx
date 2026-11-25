@@ -60,7 +60,7 @@ export default function InsightsScreen() {
         [t("ins_member"), t("ins_share"), t("ins_charged"), t("ins_paid"), t("ins_balance")].map(csvCell).join(","),
         ...i.members.map((m) => [m.name, m.share, m.charged, m.credited, m.balance].map(csvCell).join(",")),
       ];
-      await exportCsv(lines.join("\n"), `saath-insights-${todayISO()}.csv`);
+      await exportCsv(lines.join("\n"), `bengu-insights-${todayISO()}.csv`);
     } catch (e) { notify(t("something_wrong"), errText(e)); }
   };
 

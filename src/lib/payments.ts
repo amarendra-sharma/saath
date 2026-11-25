@@ -17,6 +17,10 @@ export type MethodDef = {
   costKey: string;        // translation key: "usually free" / "low fee" …
   handleLabelKey: string; // what the main field means
   handlePlaceholder: string;
+  /** Translation key for a placeholder made of words (the plain handlePlaceholder is used when it is a format, e.g. name@okbank). */
+  phKey?: string;
+  /** Translation key for a name that is a plain word, not a brand (Bank, Cash, Other). */
+  nameKey?: string;
   fields?: Field[];       // extra details (bank etc.)
   link?: (p: LinkArgs) => string | null;
   /** A standard payment QR code that the payer's app scans (UPI, Pix, SEPA "GiroCode"). */
@@ -36,16 +40,16 @@ export const METHODS: MethodDef[] = [
     qr: ({ handle, amount, currency, name, note }) => (currency === "INR" && handle.includes("@") ? upiPayload(handle, name, amount, note) : null),
     qrHintKey: "qr_hint_upi" },
   { key: "wise", name: "Wise", icon: "globe-outline", region: "region_world", costKey: "cost_low_intl",
-    handleLabelKey: "f_wise_tag", handlePlaceholder: "@yourname or email",
+    handleLabelKey: "f_wise_tag", handlePlaceholder: "@yourname or email", phKey: "ph_wise",
     link: ({ handle }) => (handle.includes("@") && !handle.startsWith("@")) ? "https://wise.com/send" : `https://wise.com/pay/me/${enc(handle.replace(/^@/, ""))}` },
   { key: "remitly", name: "Remitly", icon: "paper-plane-outline", region: "region_to_india", costKey: "cost_low_intl",
-    handleLabelKey: "f_receiver", handlePlaceholder: "Receiver name / phone",
+    handleLabelKey: "f_receiver", handlePlaceholder: "Receiver name / phone", phKey: "ph_receiver_phone",
     link: () => "https://www.remitly.com" },
   { key: "zelle", name: "Zelle", icon: "flash-outline", region: "region_us", costKey: "cost_free",
-    handleLabelKey: "f_email_or_phone", handlePlaceholder: "email or US phone",
+    handleLabelKey: "f_email_or_phone", handlePlaceholder: "email or US phone", phKey: "ph_email_us_phone",
     link: () => null, howKey: "how_zelle" },
   { key: "paypal", name: "PayPal", icon: "logo-paypal", region: "region_world", costKey: "cost_free_friends",
-    handleLabelKey: "f_paypal_me", handlePlaceholder: "paypal.me username",
+    handleLabelKey: "f_paypal_me", handlePlaceholder: "paypal.me username", phKey: "ph_paypal",
     link: ({ handle, amount, currency }) => `https://paypal.me/${enc(handle.replace(/^.*paypal\.me\//, ""))}/${amount.toFixed(2)}${currency}` },
   { key: "revolut", name: "Revolut", icon: "card-outline", region: "region_europe", costKey: "cost_free",
     handleLabelKey: "f_revtag", handlePlaceholder: "revtag",
@@ -62,34 +66,34 @@ export const METHODS: MethodDef[] = [
     qr: ({ handle, amount, currency, name, note, details }) =>
       currency === "EUR" ? epcPayload({ iban: handle, name: details.account_name || name, bic: details.bic, amount, text: note }) : null,
     qrHintKey: "qr_hint_sepa", howKey: "how_bank" },
-  { key: "bank_in", name: "Bank (India)", icon: "business-outline", region: "region_india", costKey: "cost_free",
-    handleLabelKey: "f_account_no", handlePlaceholder: "Account number",
+  { key: "bank_in", name: "Bank (India)", nameKey: "m_bank_in", icon: "business-outline", region: "region_india", costKey: "cost_free",
+    handleLabelKey: "f_account_no", handlePlaceholder: "Account number", phKey: "ph_account_no",
     fields: [{ key: "account_name", labelKey: "f_account_name" }, { key: "ifsc", labelKey: "f_ifsc", placeholder: "SBIN0001234" }, { key: "bank", labelKey: "f_bank" }],
     howKey: "how_bank" },
-  { key: "bank_intl", name: "Bank transfer", icon: "business-outline", region: "region_world", costKey: "cost_bank",
-    handleLabelKey: "f_account_or_iban", handlePlaceholder: "Account / IBAN",
+  { key: "bank_intl", name: "Bank transfer", nameKey: "m_bank_intl", icon: "business-outline", region: "region_world", costKey: "cost_bank",
+    handleLabelKey: "f_account_or_iban", handlePlaceholder: "Account / IBAN", phKey: "ph_account_iban",
     fields: [{ key: "account_name", labelKey: "f_account_name" }, { key: "swift", labelKey: "f_swift" }, { key: "routing", labelKey: "f_routing" }, { key: "bank", labelKey: "f_bank" }],
     howKey: "how_bank" },
   { key: "esewa", name: "eSewa", icon: "wallet-outline", region: "region_nepal", costKey: "cost_free",
     handleLabelKey: "f_esewa_id", handlePlaceholder: "98XXXXXXXX", howKey: "how_esewa" },
   { key: "khalti", name: "Khalti", icon: "wallet-outline", region: "region_nepal", costKey: "cost_free",
     handleLabelKey: "f_khalti_id", handlePlaceholder: "98XXXXXXXX", howKey: "how_khalti" },
-  { key: "bank_np", name: "Bank (Nepal)", icon: "business-outline", region: "region_nepal", costKey: "cost_free",
-    handleLabelKey: "f_account_no", handlePlaceholder: "Account number",
+  { key: "bank_np", name: "Bank (Nepal)", nameKey: "m_bank_np", icon: "business-outline", region: "region_nepal", costKey: "cost_free",
+    handleLabelKey: "f_account_no", handlePlaceholder: "Account number", phKey: "ph_account_no",
     fields: [{ key: "account_name", labelKey: "f_account_name" }, { key: "bank", labelKey: "f_bank" }, { key: "branch", labelKey: "f_branch" }],
     howKey: "how_bank_np" },
   { key: "mpesa", name: "M-Pesa", icon: "phone-portrait-outline", region: "region_africa", costKey: "cost_low",
-    handleLabelKey: "f_phone_or_till", handlePlaceholder: "+2547… / till no.", howKey: "how_mpesa" },
+    handleLabelKey: "f_phone_or_till", handlePlaceholder: "+2547… / till no.", phKey: "ph_mpesa", howKey: "how_mpesa" },
   { key: "pix", name: "Pix", icon: "qr-code-outline", region: "region_brazil", costKey: "cost_free",
-    handleLabelKey: "f_pix_key", handlePlaceholder: "Pix key",
+    handleLabelKey: "f_pix_key", handlePlaceholder: "Pix key", phKey: "ph_pix",
     qr: ({ handle, amount, currency, name, city }) => (currency === "BRL" ? pixPayload({ key: handle, name, city, amount }) : null),
     qrHintKey: "qr_hint_pix" },
   { key: "western_union", name: "Western Union", icon: "earth-outline", region: "region_world", costKey: "cost_varies",
-    handleLabelKey: "f_receiver", handlePlaceholder: "Receiver name",
+    handleLabelKey: "f_receiver", handlePlaceholder: "Receiver name", phKey: "ph_receiver_name",
     link: () => "https://www.westernunion.com" },
-  { key: "cash", name: "Cash", icon: "wallet-outline", region: "region_in_person", costKey: "cost_free",
-    handleLabelKey: "f_where", handlePlaceholder: "Hand to …" },
-  { key: "other", name: "Other", icon: "ellipsis-horizontal-circle-outline", region: "region_any", costKey: "cost_varies",
+  { key: "cash", name: "Cash", nameKey: "m_cash", icon: "wallet-outline", region: "region_in_person", costKey: "cost_free",
+    handleLabelKey: "f_where", handlePlaceholder: "Hand to …", phKey: "ph_hand_to" },
+  { key: "other", name: "Other", nameKey: "m_other", icon: "ellipsis-horizontal-circle-outline", region: "region_any", costKey: "cost_varies",
     handleLabelKey: "f_details", handlePlaceholder: "" },
 ];
 
@@ -107,12 +111,17 @@ export function methodsFor(currency?: string | null) {
   return [...first.map((k) => METHODS.find((m) => m.key === k)!), ...METHODS.filter((m) => !first.includes(m.key))];
 }
 
+/** Name to show for a method: brand names stay as they are; Bank / Cash / Other are translated. */
+export const methodLabel = (k: string, tr: (key: string) => string) => { const d = methodDef(k); return d.nameKey ? tr(d.nameKey) : d.name; };
+/** Placeholder for the main field, translated when it is made of words. */
+export const methodPlaceholder = (d: MethodDef, tr: (key: string) => string) => (d.phKey ? tr(d.phKey) : d.handlePlaceholder);
+
 export const methodDef = (k: string) => METHODS.find((m) => m.key === k) ?? METHODS[METHODS.length - 1];
 
 /** Text block to copy/share for a method (bank details etc.) */
 export function methodText(m: { method: string; handle?: string | null; label?: string | null; details?: Record<string, string> | null }, tr: (k: string) => string) {
   const d = methodDef(m.method);
-  const lines = [`${m.label || d.name}`];
+  const lines = [`${m.label || (d.nameKey ? tr(d.nameKey) : d.name)}`];
   if (m.handle) lines.push(`${tr(d.handleLabelKey)}: ${m.handle}`);
   for (const f of d.fields ?? []) {
     const v = m.details?.[f.key];

@@ -76,14 +76,15 @@ Without this step, the app still has one-tap "Remind on WhatsApp" buttons, which
 4. Copy the **Phone number ID** from WhatsApp → API Setup.
 5. Go to **WhatsApp Manager → Message templates → Create**. Use these settings:
    - Category: **Utility**
-   - Name: `saath_dues_reminder`
+   - Name: `bengu_dues_reminder`
    - Add one language version for each language your family uses. The body must use exactly these 4 variables.
 
 | Language (Meta code) | Template body |
 |---|---|
 | English (`en`) | Hello {{1}}, this is a reminder from Bengu for "{{2}}". Your share currently due is {{3}}, by {{4}}. Please pay when you can and mark it in the Bengu app. Thank you. |
-| Hindi (`hi`) | नमस्ते {{1}}, "{{2}}" के लिए साथ की ओर से अनुस्मारक। आपका बकाया हिस्सा {{3}} है, {{4}} तक। सुविधा अनुसार भुगतान करें और साथ ऐप में दर्ज करें। धन्यवाद। |
-| Bengali (`bn`) | নমস্কার {{1}}, "{{2}}"-এর জন্য সাথ থেকে অনুস্মারক। আপনার বকেয়া অংশ {{3}}, {{4}}-এর মধ্যে। সুবিধামতো পরিশোধ করে সাথ অ্যাপে লিখে রাখুন। ধন্যবাদ। |
+| Hindi (`hi`) | नमस्ते {{1}}, "{{2}}" के लिए Bengu की ओर से अनुस्मारक। आपका बकाया हिस्सा {{3}} है, {{4}} तक। सुविधा अनुसार भुगतान करें और Bengu ऐप में दर्ज करें। धन्यवाद। |
+| Bengali (`bn`) | নমস্কার {{1}}, "{{2}}"-এর জন্য Bengu থেকে অনুস্মারক। আপনার বকেয়া অংশ {{3}}, {{4}}-এর মধ্যে। সুবিধামতো পরিশোধ করে Bengu অ্যাপে লিখে রাখুন। ধন্যবাদ। |
+| Nepali (`ne`) | नमस्ते {{1}}, "{{2}}" का लागि Bengu बाट रिमाइन्डर। तपाईंको तिर्न बाँकी हिस्सा {{3}} छ, {{4}} सम्म। सुविधाअनुसार तिर्नुहोस् र Bengu एपमा चिनो लगाउनुहोस्। धन्यवाद। |
 | Spanish (`es`) | Hola {{1}}, te recordamos desde Bengu para "{{2}}". Tu parte pendiente es {{3}}, antes del {{4}}. Paga cuando puedas y márcalo en la app Bengu. Gracias. |
 | French (`fr`) | Bonjour {{1}}, rappel de Bengu pour « {{2}} ». Votre part due est de {{3}}, avant le {{4}}. Payez dès que possible et indiquez-le dans l'application Bengu. Merci. |
 | Portuguese (`pt_BR`) | Olá {{1}}, lembrete do Bengu para "{{2}}". Sua parte em aberto é {{3}}, até {{4}}. Pague quando puder e registre no app Bengu. Obrigado. |
@@ -99,7 +100,7 @@ If a language version isn't approved yet, Bengu falls back to the English templa
 Your Resend account currently sends from `onboarding@resend.dev`. Resend only delivers mail from that address to the account owner's own inbox.
 
 1. In **resend.com → Domains**, add `macronations.com` and add the DNS records it shows.
-2. In Supabase Edge Function secrets, add `SAATH_EMAIL_FROM` with the value `Bengu <saath@macronations.com>`.
+2. In Supabase Edge Function secrets, add `SAATH_EMAIL_FROM` with the value `Bengu <bengu@macronations.com>`.
 
 ## 7. Turn on bill scanning
 

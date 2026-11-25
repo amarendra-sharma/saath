@@ -3,7 +3,7 @@
 //   { action: "send",   email, language }
 //   { action: "verify", email, code, new_password }
 // Needs RESEND_API_KEY (already a project secret). Optional SAATH_EMAIL_FROM,
-// e.g. "Bengu <saath@macronations.com>" once that domain is verified in Resend.
+// e.g. "Bengu <bengu@macronations.com>" once that domain is verified in Resend.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const cors = {

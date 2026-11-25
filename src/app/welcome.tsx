@@ -64,7 +64,7 @@ export default function Welcome() {
           </View>
           <View>
             <Text style={[T.hero, { color: C.white }]}>{t("app_name")}</Text>
-            <Text style={[T.small, { color: "rgba(255,255,255,0.75)" }]}>by MacroNations</Text>
+            <Text style={[T.small, { color: "rgba(255,255,255,0.75)" }]}>{t("by_macronations")}</Text>
           </View>
         </View>
         <Text style={[T.h2, { color: C.white, fontWeight: "600", lineHeight: 28, marginTop: S.md }]}>{t("tagline")}</Text>

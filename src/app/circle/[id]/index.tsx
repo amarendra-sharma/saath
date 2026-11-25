@@ -10,7 +10,7 @@ import { CATEGORY_ICON, PURPOSE_ICON } from "../../../lib/constants";
 import { Activity, Contribution, Expense, Summary, loadSummary, memberName, useLoad } from "../../../lib/data";
 import { dateLabel, money, monthLabel } from "../../../lib/format";
 import { copy, openWhatsApp, shareText } from "../../../lib/share";
-import { methodDef } from "../../../lib/payments";
+import { methodLabel } from "../../../lib/payments";
 import { callFn, errText, supabase } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
 import { AiAccess, aiStatus } from "../../../lib/plus";
@@ -336,7 +336,7 @@ function Payments({ x, s, items, onChanged }: { x: Ctx; s: Summary; items: Contr
   const rowFor = (p: Contribution, i: number, arr: Contribution[]) => {
     const who = memberName(s, p.member_id);
     const isMine = p.member_id === s.me;
-    const kindLabel = p.kind === "expense_paid" ? t("kind_expense_paid") : p.kind === "reimbursement" ? t("kind_reimbursement") : (p.method ? methodName(p.method) : t("kind_payment"));
+    const kindLabel = p.kind === "expense_paid" ? t("kind_expense_paid") : p.kind === "reimbursement" ? t("kind_reimbursement") : (p.method ? methodLabel(p.method, t) : t("kind_payment"));
     return (
       <View key={p.id} style={[{ paddingVertical: S.md, gap: S.sm }, i < arr.length - 1 && { borderBottomWidth: 1, borderBottomColor: C.line }]}>
         <View style={{ flexDirection: "row", alignItems: "center", gap: S.md }}>
@@ -463,7 +463,6 @@ supabase.auth.getSession().then(({ data }) => { _uid = data.session?.user.id ?? 
 supabase.auth.onAuthStateChange((_e, s) => { _uid = s?.user.id ?? null; });
 const sessionUid = () => _uid;
 
-const methodName = (k: string) => methodDef(k).name;
 
 function Tool({ icon, label, sub, onPress, gold }: { icon: string; label: string; sub: string; onPress: () => void; gold?: boolean }) {
   return (

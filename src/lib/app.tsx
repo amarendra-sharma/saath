@@ -4,7 +4,7 @@ import { getLocales } from "expo-localization";
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { Alert, Platform } from "react-native";
 import { STRINGS, LangCode, LANGS } from "./strings";
-import { supabase } from "./supabase";
+import { setErrTranslator, supabase } from "./supabase";
 import { appFlags, isAdmin as fetchIsAdmin } from "./admin";
 import { attributeSignup, trackAppVisit } from "./visits";
 import { setBillCheckPaid } from "./billcheck";
@@ -95,6 +95,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const t = useCallback((key: string, params?: Record<string, string | number>) => translate(lang, key, params), [lang]);
+  setErrTranslator((k) => translate(lang, k), lang);
 
   const value = useMemo(() => ({ ready, session, profile, lang, setLang, t, refreshProfile, isAdmin: admin, flags }),
     [ready, session, profile, lang, setLang, t, refreshProfile, admin, flags]);

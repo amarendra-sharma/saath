@@ -6,7 +6,7 @@ import { AmountField, Banner, Button, Card, Chips, Empty, Field, Icon, Loading, 
 import { notify, useApp } from "../../../lib/app";
 import { Summary, loadSummary, useLoad } from "../../../lib/data";
 import { dateLabel, money, parseAmount, todayISO } from "../../../lib/format";
-import { methodDef } from "../../../lib/payments";
+import { methodDef, methodLabel } from "../../../lib/payments";
 import { errText } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
 import { Trail, TrailBill, loadTrail, recordPayout } from "../../../lib/trail";
@@ -147,7 +147,7 @@ export default function PayoutScreen() {
       </View>
       <View style={{ gap: S.sm }}>
         <Text style={[T.small, { color: C.ink2, fontWeight: "600" }]}>{t("po_how_paid")}</Text>
-        <Chips value={method} onChange={setMethod} options={methodsFor(cur).map((k) => ({ value: k, label: k === "card" ? t("po_card") : k === "cheque" ? t("po_cheque") : methodDef(k).name, icon: k === "card" ? "card-outline" : k === "cheque" ? "document-outline" : methodDef(k).icon }))} />
+        <Chips value={method} onChange={setMethod} options={methodsFor(cur).map((k) => ({ value: k, label: k === "card" ? t("po_card") : k === "cheque" ? t("po_cheque") : methodLabel(k, t), icon: k === "card" ? "card-outline" : k === "cheque" ? "document-outline" : methodDef(k).icon }))} />
       </View>
       <Field label={t("po_reference")} value={reference} onChangeText={setReference} placeholder={t("po_reference_ph")} autoCapitalize="characters" maxLength={120} />
       <View style={{ borderWidth: 1, borderColor: proof.length ? C.line : C.accent, borderRadius: R.md, padding: S.md, gap: S.sm, backgroundColor: proof.length ? C.card : C.accentSoft }}>

@@ -7,7 +7,7 @@ import { AmountField, Banner, Button, Card, Chips, Field, Icon, Loading, Screen,
 import { notify, useApp } from "../../../lib/app";
 import { PayMethod, Summary, loadSummary, useLoad } from "../../../lib/data";
 import { CURRENCIES, money, parseAmount, todayISO } from "../../../lib/format";
-import { ABROAD, methodDef, methodText } from "../../../lib/payments";
+import { ABROAD, methodDef, methodLabel, methodText } from "../../../lib/payments";
 import { payCountry } from "../../../lib/plus";
 import { copy, openUrl } from "../../../lib/share";
 import { errText, supabase } from "../../../lib/supabase";
@@ -60,7 +60,7 @@ export default function Pay() {
 
   const methodOptions = useMemo(() => {
     const keys = [...new Set([...(payee?.methods ?? []).map((m) => m.method), ...(s?.circle.currency === "NPR" ? ["esewa", "khalti", "bank_np"] : ["upi"]), "wise", "bank_intl", "cash", "other"])];
-    return keys.map((k) => ({ value: k, label: methodDef(k).name, icon: methodDef(k).icon }));
+    return keys.map((k) => ({ value: k, label: methodLabel(k, t), icon: methodDef(k).icon }));
   }, [payee, s?.circle.currency]);
 
   if (!s) return <Loading />;
@@ -107,7 +107,7 @@ export default function Pay() {
             <Icon name={def.icon} size={20} color={C.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[T.h3, { color: C.ink }]}>{m.label || def.name}</Text>
+            <Text style={[T.h3, { color: C.ink }]}>{m.label || methodLabel(m.method, t)}</Text>
             <Text style={[T.tiny, { color: C.ok, fontWeight: "700" }]}>{t(def.costKey)} · {t(def.region)}</Text>
           </View>
         </View>
@@ -118,13 +118,13 @@ export default function Pay() {
         {def.howKey && !link ? <Text style={[T.small, { color: C.ink2 }]}>{t(def.howKey, { amount: money(amt || due, cur, lang) })}</Text> : null}
         {showQr && qr ? (
           <View style={{ gap: S.sm, alignItems: "center", paddingVertical: S.sm }}>
-            <QrCode value={qr} size={220} label={t("qr_label", { name: def.name })} />
+            <QrCode value={qr} size={220} label={t("qr_label", { name: methodLabel(m.method, t) })} />
             <Text style={[T.small, { color: C.ink2, textAlign: "center" }]}>{t(def.qrHintKey ?? "qr_hint_upi", { amount: money(amt || due, cur, lang) })}</Text>
           </View>
         ) : null}
         <View style={{ flexDirection: "row", gap: S.sm, flexWrap: "wrap" }}>
-          {link ? <Button small icon="open-outline" label={t("open_x", { name: def.name })} style={{ flexGrow: 1 }}
-            onPress={async () => { setMethod(m.method); if (!(await openUrl(link))) notify(t("couldnt_open", { name: def.name })); }} /> : null}
+          {link ? <Button small icon="open-outline" label={t("open_x", { name: methodLabel(m.method, t) })} style={{ flexGrow: 1 }}
+            onPress={async () => { setMethod(m.method); if (!(await openUrl(link))) notify(t("couldnt_open", { name: methodLabel(m.method, t) })); }} /> : null}
           {qr ? <Button small kind={link ? "secondary" : "primary"} icon="qr-code-outline" label={showQr ? t("hide_qr") : t("show_qr")} style={{ flexGrow: 1 }}
             onPress={() => { setMethod(m.method); setQrOpen(showQr ? "" : m.id); }} /> : null}
           {m.method === "pix" && qr ? <Button small kind="secondary" icon="copy-outline" label={t("copy_pix")} style={{ flexGrow: 1 }}

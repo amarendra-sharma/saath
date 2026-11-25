@@ -6,6 +6,7 @@ import {
   TextInput, TextInputProps, View, ViewStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useApp } from "../lib/app";
 import { initials } from "../lib/format";
 import { C, R, S, T, shadow } from "../lib/theme";
 
@@ -22,12 +23,13 @@ export function Screen({
   footer?: React.ReactNode; scroll?: boolean; onRefresh?: () => void; padded?: boolean;
 }) {
   const ins = useSafeAreaInsets();
+  const { t } = useApp();
   const Body: any = scroll ? ScrollView : View;
   return (
     <KeyboardAvoidingView style={{ flex: 1, backgroundColor: C.bg }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <View style={{ paddingTop: ins.top + 6, paddingHorizontal: S.lg, paddingBottom: S.sm, flexDirection: "row", alignItems: "center", gap: S.sm }}>
         {back ? (
-          <Pressable accessibilityRole="button" accessibilityLabel="Back" hitSlop={12}
+          <Pressable accessibilityRole="button" accessibilityLabel={t("back")} hitSlop={12}
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/home"))}
             style={({ pressed }) => [st.iconBtn, pressed && { opacity: 0.6 }]}>
             <Icon name="chevron-back" size={24} />
@@ -238,9 +240,10 @@ export function Banner({ text, tone = "pending", icon = "information-circle-outl
 /** Bottom sheet modal */
 export function Sheet({ visible, onClose, title, children }: { visible: boolean; onClose: () => void; title: string; children: React.ReactNode }) {
   const ins = useSafeAreaInsets();
+  const { t } = useApp();
   return (
     <Modal visible={visible} transparent onRequestClose={onClose} statusBarTranslucent>
-      <Pressable style={{ flex: 1, backgroundColor: C.overlay }} onPress={onClose} accessibilityLabel="Close" />
+      <Pressable style={{ flex: 1, backgroundColor: C.overlay }} onPress={onClose} accessibilityLabel={t("close")} />
       <View style={[st.sheet, { paddingBottom: ins.bottom + S.lg }]}>
         <View style={{ alignSelf: "center", width: 44, height: 5, borderRadius: 3, backgroundColor: C.line, marginBottom: S.md }} />
         <Text style={[T.h2, { color: C.ink, marginBottom: S.md }]}>{title}</Text>

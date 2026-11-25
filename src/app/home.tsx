@@ -33,7 +33,7 @@ export default function Home() {
             <Text style={[T.small, { color: C.ink3 }]}>{t("namaste")}{first ? `, ${first}` : ""}</Text>
             <Text style={[T.h1, { color: C.ink }]} accessibilityRole="header">{t("your_circles")}</Text>
           </View>
-          {isAdmin ? <IconButton icon="shield-half-outline" label="Admin console" color={C.primary} onPress={() => router.push("/admin")} /> : null}
+          {isAdmin ? <IconButton icon="shield-half-outline" label={t("admin_console")} color={C.primary} onPress={() => router.push("/admin")} /> : null}
           <IconButton icon="person-circle-outline" label={t("profile")} onPress={() => router.push("/profile")} />
         </View>
 

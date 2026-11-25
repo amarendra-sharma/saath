@@ -7,7 +7,7 @@ import { confirm, notify, useApp } from "../../../lib/app";
 import { Summary, loadSummary, useLoad } from "../../../lib/data";
 import { esc, exportPdf } from "../../../lib/exporter";
 import { dateLabel, money } from "../../../lib/format";
-import { methodDef } from "../../../lib/payments";
+import { methodLabel } from "../../../lib/payments";
 import { openUrl } from "../../../lib/share";
 import { errText } from "../../../lib/supabase";
 import { C, R, S, T } from "../../../lib/theme";
@@ -172,7 +172,7 @@ export default function TrailScreen() {
               <View style={{ flexDirection: "row", alignItems: "center", gap: S.sm }}>
                 <View style={{ flex: 1 }}>
                   <Text style={[T.h3, { color: C.ink }]} numberOfLines={1}>{p.vendor || t("tr_a_provider")}</Text>
-                  <Text style={[T.tiny, { color: C.ink3 }]}>{[dateLabel(p.paid_on, lang, true), t("tr_from_x", { name: p.payee }), p.method ? methodDef(p.method).name : null, p.reference].filter(Boolean).join(" · ")}</Text>
+                  <Text style={[T.tiny, { color: C.ink3 }]}>{[dateLabel(p.paid_on, lang, true), t("tr_from_x", { name: p.payee }), p.method ? (p.method === "card" ? t("po_card") : p.method === "cheque" ? t("po_cheque") : methodLabel(p.method, t)) : null, p.reference].filter(Boolean).join(" · ")}</Text>
                 </View>
                 <Text style={[T.h3, { color: C.ink }]}>{m$(p.amount)}</Text>
               </View>
