@@ -1,0 +1,42 @@
+<script>
+  // contents list, highlight while scrolling, and a simple search over sections
+  (function () {
+    var secs = [].slice.call(document.querySelectorAll("main section[id]"));
+    var list = document.getElementById("tocList");
+    secs.forEach(function (s) {
+      var li = document.createElement("li"), a = document.createElement("a");
+      a.href = "#" + s.id; a.textContent = s.getAttribute("data-title") || s.id; li.appendChild(a); list.appendChild(li);
+    });
+    var links = [].slice.call(list.querySelectorAll("a"));
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) links.forEach(function (a) { a.classList.toggle("on", a.getAttribute("href") === "#" + e.target.id); }); });
+      }, { rootMargin: "-20% 0px -70% 0px" });
+      secs.forEach(function (s) { io.observe(s); });
+    }
+    var q = document.getElementById("q");
+    q.addEventListener("input", function () {
+      var v = q.value.trim().toLowerCase();
+      secs.forEach(function (s) { s.classList.toggle("hidden", !!v && s.textContent.toLowerCase().indexOf(v) === -1); });
+    });
+  })();
+</script>
+<script>
+  // language: remember the reader's choice; on the English page, open the reader's own language if we have it
+  (function () {
+    var L = ["hi", "bn", "ne", "es", "fr", "pt"], cur = document.documentElement.lang, saved = null;
+    try { saved = localStorage.getItem("bengu-guide-lang"); } catch (e) {}
+    var sel = document.getElementById("lang");
+    if (sel) sel.addEventListener("change", function () {
+      var m = sel.value.match(/guide\.([a-z]{2})\.html/);
+      try { localStorage.setItem("bengu-guide-lang", m ? m[1] : "en"); } catch (e) {}
+    });
+    if (cur === "en" && !/[?&]lang=en/.test(location.search)) {
+      var n = saved || (navigator.language || "").slice(0, 2).toLowerCase();
+      if (L.indexOf(n) >= 0) location.replace("/guide." + n + ".html" + location.hash);
+    }
+  })();
+</script>
+<script src="/saath-track.js" defer></script>
+</body>
+</html>

@@ -88,15 +88,18 @@ These are plain HTML files in `public/`, published with the web app at bengu.mac
 | Page | File | What it is |
 | --- | --- | --- |
 | `/about.html` | `public/about.html` | The landing page people reach from macronations.com |
-| `/guide.html` | `public/guide.html` | The user guide (manual), screen by screen |
+| `/guide.html` | `public/guide.html` | The user guide (manual), screen by screen, in English |
+| `/guide.<lang>.html` | `public/guide.hi.html`, `.bn`, `.ne`, `.es`, `.fr`, `.pt` | The same guide in each app language |
 | `/privacy.html` | `public/privacy.html` | Privacy policy |
 
-**Keep the guide current.** Every change to how Bengu works must update `public/guide.html` in the same change:
-1. edit the section that describes the screen or feature (section ids such as `#money-trail` are linked from the app, so keep them);
-2. add a dated line at the top of "What's new";
-3. use the exact button and screen names the app shows (from `src/lib/strings.en.ts`).
+**The guide is generated.** The text lives in `guide/body.<lang>.html` (one file per language); styles and scripts are shared in `guide/head.html` and `guide/tail.html`. After editing, run `python3 guide/build.py public` to rebuild all seven pages. Each page has a language menu; the English page opens the reader's saved or browser language automatically (add `?lang=en` to stay in English).
 
-The app links to the guide from Profile ("How to use Bengu") and to the landing page from the welcome screen (`extra.guideUrl` and `extra.aboutUrl` in `app.json`).
+**Keep the guide current, in every language.** Every change to how Bengu works must update all seven `guide/body.*.html` files in the same change:
+1. edit the section that describes the screen or feature (section ids such as `#money-trail` are linked from the app and must stay the same in every language);
+2. add a dated line at the top of "What's new";
+3. use the exact button and screen names the app shows in that language (from `src/lib/strings.<lang>.ts`).
+
+The app opens the guide in the person's language from Profile ("How to use Bengu"), and the landing page from the welcome screen (`extra.guideUrl` and `extra.aboutUrl` in `app.json`).
 
 ## Where visitors come from
 

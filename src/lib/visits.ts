@@ -46,7 +46,9 @@ export function attributeSignup(userId: string) {
     .then(({ error }) => { if (!error) ls("saath_attr_" + userId, "1"); }, () => {});
 }
 
-export const guideUrl = (section?: string) => {
-  const base = String((Constants.expoConfig?.extra as any)?.guideUrl ?? "https://bengu.macronations.com/guide.html");
-  return section ? `${base}#${section}` : base;
+/** The user guide in the person's language (guide.html is English; guide.<lang>.html for the others). */
+export const guideUrl = (section?: string, lang = "en") => {
+  let base = String((Constants.expoConfig?.extra as any)?.guideUrl ?? "https://bengu.macronations.com/guide.html");
+  if (lang !== "en" && ["hi", "bn", "ne", "es", "fr", "pt"].includes(lang)) base = base.replace(/guide\.html$/, `guide.${lang}.html`);
+  return `${base}${lang === "en" ? "?lang=en" : ""}${section ? "#" + section : ""}`;
 };

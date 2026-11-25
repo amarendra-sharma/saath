@@ -1,0 +1,246 @@
+<a class="skip" href="#main">Aller au contenu</a>
+<nav class="top" aria-label="Principal">
+  <div class="wrap">
+    <a class="brand" href="/about.html"><img src="/img/bengu-icon.png" alt=""> Guide de Bengu</a>
+    <div class="links">{{LANGS}}<a href="/about.html">À propos</a><a class="btn" href="/">Ouvrir Bengu</a></div>
+  </div>
+</nav>
+
+<div class="layout">
+  <aside class="toc" aria-label="Sommaire">
+    <p class="t">Sommaire</p>
+    <ol id="tocList"></ol>
+  </aside>
+
+  <main id="main">
+    <div class="intro">
+      <h1>Comment utiliser Bengu</h1>
+      <p>Bengu aide un groupe à partager des dépenses sur des semaines, des mois ou des années. Ce guide suit l'application écran par écran, dans l'ordre où vous les rencontrerez.</p>
+      <p class="meta">Guide mis à jour le <span id="guideUpdated">25 novembre 2026</span> · correspond à l'application actuelle · <a href="#whats-new" style="color:#FFD98A">Nouveautés</a></p>
+    </div>
+    <div class="search"><label for="q" class="sr" style="position:absolute;left:-999px">Rechercher dans le guide</label>
+      <input id="q" type="search" placeholder="Rechercher dans le guide, p. ex. QR, vérifier, rappel, supprimer…" autocomplete="off"></div>
+
+    <section id="whats-new" data-title="Nouveautés">
+      <h2>Nouveautés</h2>
+      <ul class="new">
+        <li><time>25 nov. 2026</time><b>Népalais, eSewa et Khalti.</b> Bengu parle désormais népalais (à choisir dans <span class="ui">Profil</span>). Les bénéficiaires au Népal peuvent ajouter eSewa, Khalti ou un compte bancaire népalais, et les cercles en roupies népalaises les affichent en premier. Voir <a href="#pay">Payer sa part</a>. Ce guide existe maintenant dans les sept langues de l'application.</li>
+        <li><time>12 nov. 2026</time><b>Nouvelle adresse web.</b> Bengu est désormais sur <a href="/">bengu.macronations.com</a>. Vos cercles, factures et paiements y sont tous ; les anciens liens redirigent automatiquement.</li>
+        <li><time>11 nov. 2026</time><b>Suivi de l'argent.</b> La personne qui reçoit l'argent du groupe enregistre chaque paiement à un hôpital ou un commerce, avec le reçu, et un autre membre le vérifie. Chaque facture indique maintenant si elle a été payée. Voir <a href="#money-trail">Suivi de l'argent</a>.</li>
+        <li><time>8 nov. 2026</time><b>QR codes et meilleurs liens de paiement.</b> QR codes UPI, Pix et SEPA sur l'écran de paiement, liens vers Wise, Remitly et Western Union pour payer depuis l'étranger, et un bouton <span class="ui">Ajouter les coordonnées de paiement</span> pour les organisateurs. Voir <a href="#pay">Payer sa part</a>.</li>
+        <li><time>7 nov. 2026</time><b>Statistiques, accords de cercle, Bengu Plus et 12 types de cercle</b> (voyages, événements, projets, clubs, cagnottes et plus).</li>
+        <li><time>6 nov. 2026</time><b>Nouvelle apparence</b> et une console d'administration pour l'équipe Bengu.</li>
+      </ul>
+    </section>
+
+    <section id="start" data-title="Premiers pas">
+      <h2><span class="n">1</span>Premiers pas</h2>
+      <p>Bengu fonctionne dans n'importe quel navigateur à l'adresse <a href="/">bengu.macronations.com</a>, sur téléphone ou sur ordinateur.</p>
+      <ol class="steps">
+        <li>Ouvrez Bengu et choisissez <span class="ui">Créer un compte</span>. Saisissez votre nom, votre e-mail et un mot de passe. Si vous suivez déjà un cours MacroNations, votre connexion MacroNations fonctionne aussi ici.</li>
+        <li>Choisissez votre langue. Vous pouvez la changer à tout moment dans <span class="ui">Profil</span>.</li>
+        <li>Sur l'écran d'accueil, choisissez <span class="ui">Nouveau cercle</span> pour en créer un, ou <span class="ui">Rejoindre</span> si quelqu'un vous a envoyé un code d'invitation.</li>
+      </ol>
+      <div class="note"><b>Un cercle</b> est un budget partagé : un groupe de personnes, une devise, un ensemble de factures. Vous pouvez faire partie d'autant de cercles que vous voulez.</div>
+    </section>
+
+    <section id="create-circle" data-title="Créer un cercle">
+      <h2><span class="n">2</span>Créer un cercle</h2>
+      <p>L'organisateur crée le cercle en trois courtes étapes.</p>
+      <ol class="steps">
+        <li><b>À quoi il sert.</b> Donnez-lui un nom (par exemple « Soins de papa » ou « Vacances en Bretagne ») et choisissez un objet : soins médicaux, aide aux aînés, études, foyer, voyage, événement, projet, club ou association, cagnotte, obsèques ou hommage, animaux, ou autre. L'objet détermine les catégories de factures proposées. Choisissez la devise et, si vous voulez, la ville.</li>
+        <li><b>Comment les frais sont partagés.</b>
+          <ul>
+            <li><span class="ui">Partager chaque facture</span> : chaque facture ajoutée est répartie selon le pourcentage de chacun. Idéal quand les dépenses varient.</li>
+            <li><span class="ui">Montant fixe par période</span> : un montant régulier (par exemple 1 200 € par mois pour une aide à domicile) dont chacun paie son pourcentage à chaque période. Les factures sont quand même enregistrées pour que tout le monde les voie, mais elles ne changent pas ce que chacun doit.</li>
+          </ul></li>
+        <li><b>Quand régler.</b> Choisissez chaque semaine, toutes les 2 semaines, chaque mois ou chaque trimestre, et le jour d'échéance. Activez <span class="ui">L'organisateur confirme les paiements</span> si un paiement ne doit compter qu'une fois l'arrivée de l'argent confirmée par l'organisateur.</li>
+      </ol>
+      <div class="tip"><b>Astuce :</b> la période, le jour d'échéance et le mode de partage se changent plus tard dans <span class="ui">Réglages</span>. Les changements s'appliquent aux nouvelles factures et périodes.</div>
+    </section>
+
+    <section id="invite" data-title="Inviter et fixer les parts">
+      <h2><span class="n">3</span>Inviter et fixer les parts</h2>
+      <h3>Inviter</h3>
+      <ol class="steps">
+        <li>Dans le cercle, ouvrez <span class="ui">Personnes</span> et choisissez <span class="ui">Inviter la famille</span>. Envoyez le message par WhatsApp ou ailleurs. Il contient un code d'invitation de 7 lettres.</li>
+        <li>L'autre personne ouvre Bengu, choisit <span class="ui">Rejoindre</span> et saisit le code. Si vous l'aviez déjà ajoutée par son nom, elle choisit son nom pour garder sa part et son historique.</li>
+      </ol>
+      <p>Vous pouvez aussi ajouter des personnes qui n'installeront jamais l'application (par exemple un parent âgé). Ajoutez son téléphone ou son e-mail : elle recevra quand même les rappels.</p>
+      <h3>Les parts</h3>
+      <p>Ouvrez <span class="ui">Modifier les parts</span> et fixez le pourcentage de chacun. Il peut être ce que le groupe décide et n'a pas besoin d'être égal ; <span class="ui">Répartir également</span> met des parts égales d'un geste. Le total doit faire 100 %. Bengu vous prévient sinon.</p>
+      <div class="note">Les nouvelles parts s'appliquent aux factures ajoutées ensuite. Les anciennes factures gardent leur répartition.</div>
+    </section>
+
+    <section id="receiver" data-title="Qui reçoit l'argent">
+      <h2><span class="n">4</span>Qui reçoit l'argent</h2>
+      <p>Indiquez à Bengu qui collecte l'argent et comment les autres peuvent le payer. C'est en général le membre de la famille qui paie l'hôpital, ou l'hôpital lui-même.</p>
+      <ol class="steps">
+        <li>Ouvrez <span class="ui">Réglages</span> → <span class="ui">Qui reçoit l'argent</span>, ou touchez <span class="ui">Ajouter les coordonnées de paiement</span> sur l'écran de paiement.</li>
+        <li>Ajoutez le bénéficiaire. S'il est membre, <b>liez le membre qui utilise réellement Bengu</b> (icône de téléphone). C'est seulement ainsi qu'il pourra enregistrer ses paiements dans le <a href="#money-trail">Suivi de l'argent</a>.</li>
+        <li>Ajoutez un ou plusieurs moyens de paiement : UPI, compte bancaire indien ou international, Wise, PayPal, Revolut, Zelle, Venmo, Cash App, SEPA (IBAN), M-Pesa, Pix, eSewa, Khalti, compte bancaire au Népal, Remitly ou espèces.</li>
+      </ol>
+      <div class="warn"><b>Les identifiants UPI</b> (Inde) ont la forme <code>name@bank</code> (par exemple 98xxxxxx10@ybl). Sans la partie après @, les applications de paiement ne peuvent pas l'ouvrir, d'où l'avertissement de Bengu.</div>
+      <p>Si un hôpital ou un prestataire doit être payé directement, ajoutez-le comme bénéficiaire séparé. L'argent versé directement à l'hôpital ne reste jamais chez une seule personne.</p>
+    </section>
+
+    <section id="bills" data-title="Ajouter des factures">
+      <h2><span class="n">5</span>Ajouter des factures</h2>
+      <ol class="steps">
+        <li>Dans le cercle, touchez <span class="ui">Ajouter une facture</span>.</li>
+        <li><b>La lire avec l'IA (facultatif) :</b> prenez une photo ou choisissez un PDF, et Bengu remplit le montant, la date, le vendeur et la catégorie, que vous vérifiez. Un PDF de plusieurs pages contenant plusieurs factures est découpé en factures séparées. Voir <a href="#plus">Bengu Plus</a>.</li>
+        <li><b>Ou la saisir :</b> titre, montant, date, catégorie et vendeur.</li>
+        <li>Joignez le reçu (photo ou PDF). Les factures sans reçu sont signalées pour que le groupe voie ce qui manque.</li>
+        <li>Sous <span class="ui">Qui a payé ?</span>, laissez le bénéficiaire sélectionné si la facture est payée avec l'argent du groupe. Si vous l'avez payée <b>de votre poche</b>, choisissez <span class="ui">J'ai payé</span> (ou le membre qui l'a fait) : il est crédité automatiquement et les autres lui doivent leur part.</li>
+        <li>Pour répartir une facture autrement (par exemple une seule personne la prend en charge), utilisez <span class="ui">Répartir cette facture autrement</span>. La répartition doit faire 100 %.</li>
+      </ol>
+      <div class="tip"><b>Vérifiez toujours la lecture de l'IA.</b> Bengu met en évidence ce dont il n'est pas sûr. Les montants ne sont jamais devinés : un montant illisible est laissé vide pour que vous le saisissiez.</div>
+      <p>Chaque facture de la liste indique si elle a été payée au prestataire : <span class="ui">Payée ✓</span> (vérifiée), <span class="ui">Payée</span>, <span class="ui">En partie</span> ou <i>Non marquée payée</i>.</p>
+    </section>
+
+    <section id="pay" data-title="Payer sa part">
+      <h2><span class="n">6</span>Payer sa part</h2>
+      <p>Votre solde est en haut du cercle. Rouge : vous devez de l'argent ; vert : vous êtes en avance.</p>
+      <ol class="steps">
+        <li>Touchez <span class="ui">Payer ma part</span>. Le montant dû est prérempli ; vous pouvez le changer.</li>
+        <li>Choisissez l'un des moyens de paiement du bénéficiaire :
+          <ul>
+            <li><b>Sur téléphone :</b> <span class="ui">Ouvrir PayPal</span>, <span class="ui">Ouvrir Wise</span>, <span class="ui">Ouvrir Revolut</span>, etc. ouvrent votre propre application avec les informations remplies.</li>
+            <li><b>Sur ordinateur, ou en payant depuis un autre téléphone :</b> utilisez <span class="ui">Afficher le QR code</span> et scannez-le avec l'application de votre banque (SEPA en Europe, Pix au Brésil) ou une application UPI. Le montant est dans le code.</li>
+            <li><b>Virements bancaires, Zelle, M-Pesa, eSewa et Khalti</b> n'ont pas de lien ; Bengu affiche les étapes et <span class="ui">Copier les infos</span> copie tout ce qu'il faut.</li>
+            <li><b>Vous payez depuis un autre pays ?</b> Bengu propose Wise, Remitly et Western Union, qui envoient de l'argent sur un compte bancaire pour bien moins cher qu'un virement international.</li>
+          </ul></li>
+        <li>Après avoir payé, revenez dans Bengu et enregistrez-le : le montant, la date, le numéro de transaction et, si possible, une capture d'écran.</li>
+      </ol>
+      <p>Si le cercle utilise <b>L'organisateur confirme les paiements</b>, votre paiement reste en attente jusqu'à ce que l'organisateur touche <span class="ui">Reçu</span>.</p>
+      <div class="note"><b>Bengu ne détient ni ne déplace jamais d'argent.</b> Il ouvre seulement votre application de paiement et garde la trace.</div>
+    </section>
+
+    <section id="money-trail" data-title="Suivi de l'argent">
+      <h2><span class="n">7</span>Suivi de l'argent : la preuve que les factures sont payées</h2>
+      <p>Quand les membres envoient de l'argent à une personne, le groupe doit savoir qu'elle a ensuite payé l'hôpital, la pharmacie ou l'infirmière. Le Suivi de l'argent le montre. Ouvrez-le depuis la carte de la page d'accueil du cercle.</p>
+      <h3>Ce qu'il montre</h3>
+      <ul>
+        <li><b>Encore chez [nom] :</b> ce que le bénéficiaire a reçu, moins ce qu'il a payé aux prestataires et remboursé aux membres.</li>
+        <li><b>Factures payées / Non marquée payée :</b> la part du montant facturé qui a un paiement enregistré.</li>
+        <li><b>À surveiller :</b> factures impayées depuis plus de 7 jours, paiements sans justificatif, paiements en attente de vérification, paiements contestés, et argent conservé alors que des factures attendent.</li>
+        <li>Trois onglets : <span class="ui">Factures impayées</span>, <span class="ui">Paiements effectués</span> et le <span class="ui">Registre</span> (chaque entrée et sortie avec le solde courant, téléchargeable en relevé PDF).</li>
+      </ul>
+      <h3>Pour le bénéficiaire : enregistrer un paiement à un prestataire</h3>
+      <ol class="steps">
+        <li>Touchez <span class="ui">Marquer payée</span> sur une facture, ou <span class="ui">Enregistrer un paiement à un prestataire</span>.</li>
+        <li>Cochez les factures couvertes par ce paiement. Un paiement peut couvrir plusieurs factures ou une partie d'une seule ; le surplus est enregistré comme avance ou acompte.</li>
+        <li>Indiquez qui vous avez payé, la date, le moyen de paiement, le numéro de transaction ou de reçu, et <b>joignez le justificatif</b> (le reçu de l'hôpital, une capture du paiement ou un avis bancaire).</li>
+        <li>Enregistrez. Les factures apparaissent payées, en attente de vérification.</li>
+      </ol>
+      <h3>Pour les autres : vérifier ou contester</h3>
+      <ul>
+        <li>Ouvrez <span class="ui">Paiements effectués</span>, touchez <span class="ui">Voir le justificatif</span> et, si tout correspond (même montant, prestataire et date), touchez <span class="ui">Vérifier</span>.</li>
+        <li>Si quelque chose cloche, touchez <span class="ui">Contester</span> et dites pourquoi. Tout le monde voit la question ; le bénéficiaire peut répondre et ajouter une preuve. Une fois satisfait, vérifiez le paiement ou retirez votre question.</li>
+      </ul>
+      <h3>Les règles</h3>
+      <table>
+        <tr><th>Règle</th><th>Pourquoi</th></tr>
+        <tr><td>Seul le bénéficiaire ou un organisateur peut enregistrer un paiement sortant.</td><td>C'est à eux de rendre compte de cet argent.</td></tr>
+        <tr><td>Quelqu'un d'autre doit le vérifier ; on ne vérifie jamais le sien.</td><td>Un deuxième regard sur chaque paiement.</td></tr>
+        <tr><td>Un paiement vérifié est verrouillé. Il peut toujours être contesté plus tard.</td><td>Les données ne changent pas en douce.</td></tr>
+        <tr><td>Une facture ne peut pas être marquée payée au-delà de son montant, et une facture payée ne peut être ni supprimée ni réduite.</td><td>Pas de double comptage.</td></tr>
+        <tr><td>Chaque étape, suppressions comprises, figure dans le journal d'activité.</td><td>Rien ne disparaît.</td></tr>
+      </table>
+      <div class="note">Aucune application ne peut prouver, au-delà du reçu, qu'un hôpital a bien reçu l'argent. C'est pourquoi chaque paiement demande un justificatif et une deuxième personne. Pour les grosses factures, pensez à payer l'hôpital directement (voir <a href="#receiver">Qui reçoit l'argent</a>).</div>
+    </section>
+
+    <section id="bill-check" data-title="Vérification des factures">
+      <h2><span class="n">8</span>Vérification des factures</h2>
+      <p>La vérification cherche des signes qu'une facture est fausse, gonflée ou modifiée. Elle se lance seule à l'ajout d'une facture, et vous pouvez la relancer avec <span class="ui">Vérifier cette facture</span>.</p>
+      <p><b>Les vérifications gratuites</b> contrôlent les totaux, les numéros de facture en double, le même fichier envoyé deux fois, les dates, les prix au-dessus du prix imprimé, les médicaments périmés, le numéro fiscal (GST en Inde) et si le nom du patient correspond aux autres factures. <b>Avec l'IA</b> (<a href="#plus">Bengu Plus</a>), elle lit aussi chaque ligne, repère les chiffres retouchés ou les parties collées, et compare les prix à ce que d'autres paient localement et en ligne.</p>
+      <div class="tip">La vérification donne <b>des alertes à examiner, pas des accusations</b>. Beaucoup ont une explication innocente. Parlez-en au prestataire, puis écartez l'alerte une fois expliquée.</div>
+    </section>
+
+    <section id="reminders" data-title="Rappels">
+      <h2><span class="n">9</span>Rappels</h2>
+      <p>À chaque période, Bengu rappelle à ceux qui doivent de l'argent de payer, par WhatsApp et par e-mail, dans la langue choisie par chacun. Le cercle indique quand part le prochain rappel.</p>
+      <ul>
+        <li>Un organisateur peut envoyer les rappels tout de suite depuis le cercle, ou relancer une personne avec <span class="ui">Rappeler sur WhatsApp</span>.</li>
+        <li>La langue et les canaux de rappel de chacun se règlent sur sa page, dans <span class="ui">Personnes</span>.</li>
+        <li><span class="ui">Réglages</span> → <span class="ui">Journal des rappels</span> montre ce qui a été envoyé et ce qui n'a pas pu l'être (par exemple un numéro manquant).</li>
+      </ul>
+    </section>
+
+    <section id="insights" data-title="Statistiques">
+      <h2><span class="n">10</span>Statistiques</h2>
+      <p>Ouvrez <span class="ui">Statistiques</span> depuis la page d'accueil du cercle pour voir :</p>
+      <ul>
+        <li>ce mois-ci, le mois dernier et la moyenne sur 3 mois ;</li>
+        <li>un graphique des 12 derniers mois, dépenses face aux sommes versées ;</li>
+        <li>où va l'argent, par catégorie, depuis le début ou sur les 90 derniers jours ;</li>
+        <li><b>qui a payé quoi</b>, comparé à la part convenue par chacun ;</li>
+        <li>les principaux vendeurs et prestataires, les plus grosses factures et l'état des données (reçus joints, alertes ouvertes, paiements en attente).</li>
+      </ul>
+      <p>Utilisez le bouton de téléchargement pour l'exporter en tableur (CSV).</p>
+    </section>
+
+    <section id="agreement" data-title="Accord du cercle">
+      <h2><span class="n">11</span>Accord du cercle</h2>
+      <p>Un court accord écrit que chacun signe dans l'application. Il évite les malentendus, surtout quand les frais durent des mois.</p>
+      <ol class="steps">
+        <li>L'organisateur ouvre <span class="ui">Accord</span> → <span class="ui">Rédiger l'accord</span>. Le texte est construit à partir des réglages du cercle : objet, parts, période et jour d'échéance.</li>
+        <li>Ajoutez vos règles : le montant au-delà duquel une dépense est discutée avant, quand relancer un retardataire, le préavis pour partir, une personne de confiance à consulter en cas de désaccord, et toute autre condition.</li>
+        <li>Publiez-le. Chaque membre le lit, tape son nom complet, coche <span class="ui">J'ai lu cet accord et je l'accepte</span> et signe.</li>
+        <li>Téléchargez le PDF à tout moment. Il liste chaque signature avec son heure et une empreinte du texte exact.</li>
+      </ol>
+      <p>Modifier l'accord publie une nouvelle version, et chacun signe à nouveau.</p>
+      <div class="note">C'est une trace écrite de ce que votre groupe a convenu, acceptée électroniquement. Ce n'est pas un conseil juridique ; pour des sommes importantes, faites-le relire par un avocat.</div>
+    </section>
+
+    <section id="statements" data-title="Relevés et exports">
+      <h2><span class="n">12</span>Relevés et exports</h2>
+      <p>Le bouton de relevé, en haut du cercle, produit un relevé pour n'importe quelle période, avec les factures, les paiements et le solde de chacun, en <b>PDF</b> ou en <b>tableur (CSV)</b>. Pratique pour une mutuelle, les impôts ou une réunion de famille. Le relevé de l'argent du bénéficiaire est dans <a href="#money-trail">Suivi de l'argent</a> → <span class="ui">Registre</span>.</p>
+    </section>
+
+    <section id="plus" data-title="Bengu Plus et IA">
+      <h2><span class="n">13</span>Bengu Plus et IA</h2>
+      <p>Tout ce qui figure dans ce guide est gratuit, sauf la lecture des factures par l'IA et les parties IA de la vérification, qui relèvent de Bengu Plus. Un abonnement Plus couvre <b>tout le cercle</b>, pas chaque personne.</p>
+      <ul>
+        <li><b>Pour l'instant</b>, l'IA est gratuite pour tous les cercles pendant l'accès anticipé.</li>
+        <li>Quand les offres payantes commenceront, chaque cercle aura <b>10 lectures IA gratuites</b> pour essayer. Ensuite, les factures pourront toujours être saisies à la main.</li>
+        <li>Les prix dépendent de votre pays : par exemple 3,99 € par mois en Europe ou 3,99 $ aux États-Unis, avec un pass de 90 jours pour une hospitalisation ou un événement.</li>
+        <li>Pour obtenir Plus, ouvrez <span class="ui">Bengu Plus</span> dans le cercle et touchez <span class="ui">Demander Plus</span> ; l'équipe Bengu vous contactera pour le paiement.</li>
+      </ul>
+    </section>
+
+    <section id="organisers" data-title="Réglages de l'organisateur">
+      <h2><span class="n">14</span>Réglages de l'organisateur</h2>
+      <ul>
+        <li><b>Réglages :</b> nom, objet, devise, période, jour d'échéance, mode de partage, confirmation des paiements, rappels.</li>
+        <li><b>Personnes :</b> ajouter ou retirer des membres, nommer un organisateur, régler la langue et les canaux de rappel de chacun.</li>
+        <li><b>Archiver le cercle :</b> arrête les rappels mais garde toutes les données accessibles à tous.</li>
+      </ul>
+    </section>
+
+    <section id="account" data-title="Votre compte et confidentialité">
+      <h2><span class="n">15</span>Votre compte et confidentialité</h2>
+      <ul>
+        <li>Changez votre nom, téléphone, langue et notifications dans <span class="ui">Profil</span>.</li>
+        <li><span class="ui">Supprimer mon compte</span> efface votre connexion et vos données personnelles. Les factures et paiements que vous avez ajoutés restent dans vos cercles, sous « Ancien membre », pour que les comptes de la famille restent justes.</li>
+        <li>Factures, reçus et paiements ne sont visibles que par les membres du cercle. Bengu n'a pas de publicité et ne vend jamais de données. Lisez la <a href="/privacy.html">politique de confidentialité</a> complète (en anglais).</li>
+      </ul>
+    </section>
+
+    <section id="help" data-title="Dépannage">
+      <h2><span class="n">16</span>Dépannage</h2>
+      <table>
+        <tr><th>Ce que vous voyez</th><th>Que faire</th></tr>
+        <tr><td>Rien ne se passe quand je touche « Ouvrir UPI » sur l'ordinateur.</td><td>Un ordinateur n'a pas d'application UPI. Utilisez <span class="ui">Afficher le QR code</span> et scannez-le avec votre téléphone.</td></tr>
+        <tr><td>« Aucun moyen de paiement ajouté » sur l'écran de paiement.</td><td>L'organisateur doit ajouter les coordonnées de paiement du bénéficiaire : <span class="ui">Ajouter les coordonnées de paiement</span>.</td></tr>
+        <tr><td>Le bénéficiaire ne peut pas enregistrer de paiements aux prestataires.</td><td>Dans <span class="ui">Qui reçoit l'argent</span>, liez le bénéficiaire au membre qui utilise Bengu (icône de téléphone).</td></tr>
+        <tr><td>Impossible de supprimer une facture.</td><td>Elle a un paiement enregistré. Supprimez d'abord ce paiement dans le Suivi de l'argent (possible seulement avant sa vérification).</td></tr>
+        <tr><td>Je ne peux pas vérifier un paiement.</td><td>Vous l'avez enregistré, ou l'argent venait de vous. Quelqu'un d'autre du cercle doit le vérifier.</td></tr>
+        <tr><td>La lecture IA indique une pause ou une limite atteinte.</td><td>Saisissez la facture à la main ; l'IA reprend le lendemain ou le mois suivant. La vérification de base continue.</td></tr>
+        <tr><td>Les parts ne font pas 100 %.</td><td>Ouvrez <span class="ui">Modifier les parts</span> et corrigez-les, ou utilisez <span class="ui">Répartir également</span>.</td></tr>
+      </table>
+      <p>Toujours bloqué ? Écrivez à <a href="mailto:support@macronations.com">support@macronations.com</a>.</p>
+    </section>
+  </main>
+</div>
+<footer><a href="/about.html">À propos de Bengu</a><a href="/privacy.html">Confidentialité</a><a href="mailto:support@macronations.com">Contact</a><span>© 2026 MacroNations LLC</span></footer>
